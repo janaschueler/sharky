@@ -1,0 +1,36 @@
+// prettier-ignore
+const level1 = new Level(
+    [
+      new Puffers(),
+      // new Puffers(),
+      // new Puffers(),
+      // new Jellyfish(),
+      // new Jellyfish(),
+      // new Boss(),
+    ],
+    [new Light()],
+    [
+      new BackgroundObject("img/3. Background/Layers/5. Water/D.png", -1440),
+      new BackgroundObject("img/3. Background/Layers/4.Fondo 2/D.png", -1440),
+      new BackgroundObject("img/3. Background/Layers/3.Fondo 1/D.png", -1440),
+      new BackgroundObject("img/3. Background/Layers/2. Floor/D.png", -1440),
+      new BackgroundObject("img/3. Background/Layers/5. Water/D.png", 0),
+      new BackgroundObject("img/3. Background/Layers/4.Fondo 2/D.png", 0),
+      new BackgroundObject("img/3. Background/Layers/3.Fondo 1/D.png", 0),
+      new BackgroundObject("img/3. Background/Layers/2. Floor/D.png", 0),
+      new BackgroundObject("img/3. Background/Layers/5. Water/D.png", 1440),
+      new BackgroundObject("img/3. Background/Layers/4.Fondo 2/D.png", 1440),
+      new BackgroundObject("img/3. Background/Layers/3.Fondo 1/D.png", 1440),
+      new BackgroundObject("img/3. Background/Layers/2. Floor/D.png", 1440),
+    ],
+    [
+      new Coin(),
+      new Coin(),
+      new Coin(),
+      new Coin(),
+      new Coin(),
+      new Coin(),
+      new Coin(),
+      new Poison()
+    ],
+  );
