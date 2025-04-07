@@ -6,6 +6,11 @@ class World {
   ctx; // canvas context
   keyboard;
   camera_x = 0;
+  coins = 0;
+  poison = 0;
+  statusBar = new StatusBarLife();
+  statusBarCoins = new StatusBarCoins();
+  statusBarPoison = new StatusBarPoison();
 
   /**
    * Creates an instance of the World class.
@@ -35,20 +40,51 @@ class World {
 
   checkCollisions() {
     setInterval(() => {
-      this.level.enemies.forEach((enemy) => {
-        if (this.character.isColliding(enemy)) {
-          this.character.hit();
-          console.log("energy Sharky", this.character.energy);
-        }
-      });
+      this.checkEnemyCollisions();
+      this.checkCollectableCollisions();
     }, 200);
+  }
+
+  checkEnemyCollisions() {
+    this.level.enemies.forEach((enemy) => {
+      if (this.character.isColliding(enemy)) {
+        this.character.hit();
+        this.character.playSoundHurt();
+        this.statusBar.setPercentage(this.character.energy);
+      }
+    });
+  }
+
+  checkCollectableCollisions() {
+    this.level.collectables.forEach((collectable, index) => {
+      if (this.character.isColliding(collectable)) {
+        this.handleCollectableCollision(collectable, index);
+      }
+    });
+  }
+
+  handleCollectableCollision(collectable, index) {
+    if (collectable instanceof Coin && this.coins < 6) {
+      collectable.playSound();
+      this.coins++;
+      this.statusBarCoins.setWallet(this.coins);
+    } else if (collectable instanceof Poison && this.poison < 6) {
+      collectable.playSound();
+      this.poison++;
+      this.statusBarPoison.storePoison(this.poison);
+    } else {
+      return;
+    }
+    this.level.collectables.splice(index, 1);
   }
 
   checkProximity() {
     setInterval(() => {
       this.level.enemies.forEach((enemy) => {
         if (this.character.isClose(enemy)) {
-          this.character.closeBy();
+          enemy.closeBy();
+        } else {
+          enemy.farAway();
         }
       });
     }, 200);
@@ -67,6 +103,14 @@ class World {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height); // clear the canvas, clearRect is a method of the canvas context
     this.ctx.translate(this.camera_x, 0);
     this.addObjectsToMap(this.level.backgroundObject);
+
+    this.ctx.translate(-this.camera_x, 0);
+    // ----- Space for fixed objects ---
+    this.addToMap(this.statusBar);
+    this.addToMap(this.statusBarCoins);
+    this.addToMap(this.statusBarPoison);
+    this.ctx.translate(this.camera_x, 0);
+
     this.addObjectsToMap(this.level.light);
     this.addObjectsToMap(this.level.enemies);
     this.addObjectsToMap(this.level.collectables);
@@ -120,6 +164,7 @@ class World {
       this.rotateImage(mo, angle);
     }
     this.ctx.restore();
+    // console.log("🚀 ~ World ~ isInProximity ~ isNear:", this.puffer.isNear);
   }
 
   /**

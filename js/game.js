@@ -8,6 +8,7 @@ function init() {
 }
 
 document.addEventListener("keydown", (event) => {
+  console.log(event);
   keyboard.pressKey(event.code);
 });
 
