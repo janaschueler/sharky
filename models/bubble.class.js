@@ -3,8 +3,12 @@ class BubbleAttack extends ThrowableObject {
   y = 0;
   width = 100;
   height = 100;
+  speedX = 0;
+  speedY = 0;
 
   constructor() {
     super();
   }
+
+  blow() {}
 }

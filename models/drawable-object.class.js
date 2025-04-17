@@ -22,7 +22,12 @@ class DrawableObject {
   }
 
   draw(ctx) {
-    ctx.drawImage(this.img, this.x, this.y, this.width, this.height); // drawImage is a method to draw an image, the first parameters is the image it self, the second and third are the x and y coordinates, the third and fourth parameters are the width and height of the image
+    try {
+      ctx.drawImage(this.img, this.x, this.y, this.width, this.height);
+    } catch (error) {
+      console.error("Error drawing image:", error);
+      console.log("Image path:", this.img?.src);
+    }
   }
 
   drawFrame(ctx) {

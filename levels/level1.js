@@ -2,11 +2,12 @@
 const level1 = new Level(
     [
       new Puffers(),
-      // new Puffers(),
-      // new Puffers(),
-      // new Jellyfish(),
-      // new Jellyfish(),
-      // new Boss(),
+      new Jellyfish(),
+      new Puffers(),
+      new Jellyfish(),
+      new Puffers(),
+      new Jellyfish(),
+      new Boss(),
     ],
     [new Light()],
     [
@@ -25,12 +26,16 @@ const level1 = new Level(
     ],
     [
       new Coin(),
+      new Poison(),
+      new Coin(),
+      new Poison(),
+      new Coin(),
+      new Poison(),
+      new Coin(),
+      new Poison(),
+      new Coin(),
+      new Poison(),
       new Coin(),
       new Coin(),
-      new Coin(),
-      new Coin(),
-      new Coin(),
-      new Coin(),
-      new Poison()
     ],
   );

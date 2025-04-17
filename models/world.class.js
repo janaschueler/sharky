@@ -1,5 +1,5 @@
 class World {
-  character = new Sharky();
+  character;
   level = level1;
 
   canvas;
@@ -24,10 +24,14 @@ class World {
     this.ctx = canvas.getContext("2d"); // with .getContext("2d") we get the 2d rendering context
     this.canvas = canvas;
     this.keyboard = keyboard;
+    this.character = new Sharky(this);
+    this.boss = new Boss(this);
+    this.boss.animate();
     this.setWorld();
     this.draw();
     this.checkCollisions();
     this.checkProximity();
+    this.checkEnemyState();
   }
 
   /**
@@ -49,7 +53,7 @@ class World {
     this.level.enemies.forEach((enemy) => {
       if (this.character.isColliding(enemy)) {
         this.character.hit();
-        this.character.playSoundHurt();
+        enemy.playSoundHurt();
         this.statusBar.setPercentage(this.character.energy);
       }
     });
@@ -90,6 +94,12 @@ class World {
     }, 200);
   }
 
+  checkEnemyState() {
+    setInterval(() => {
+      this.level.enemies = this.level.enemies.filter((enemy) => !enemy.markedForRemoval);
+    }, 200);
+  }
+
   /**
    * Draws the game world onto the canvas.
    * This method clears the canvas, applies camera transformations,
@@ -115,6 +125,7 @@ class World {
     this.addObjectsToMap(this.level.enemies);
     this.addObjectsToMap(this.level.collectables);
     this.addToMap(this.character);
+    this.addToMap(this.boss);
     this.ctx.translate(-this.camera_x, 0);
     requestAnimationFrame(() => {
       this.draw();
@@ -164,7 +175,6 @@ class World {
       this.rotateImage(mo, angle);
     }
     this.ctx.restore();
-    // console.log("🚀 ~ World ~ isInProximity ~ isNear:", this.puffer.isNear);
   }
 
   /**

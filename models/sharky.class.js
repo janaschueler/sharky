@@ -17,13 +17,12 @@ class Sharky extends MovableObjects {
   IMAGES_ATTACK_BUBBLE = ["img/1.Sharkie/4.Attack/Bubble trap/op1/1.png", "img/1.Sharkie/4.Attack/Bubble trap/op1/2.png", "img/1.Sharkie/4.Attack/Bubble trap/op1/3.png", "img/1.Sharkie/4.Attack/Bubble trap/op1/4.png", "img/1.Sharkie/4.Attack/Bubble trap/op1/5.png", "img/1.Sharkie/4.Attack/Bubble trap/op1/6.png", "img/1.Sharkie/4.Attack/Bubble trap/op1/7.png", "img/1.Sharkie/4.Attack/Bubble trap/op1/8.png"];
   IMAGES_ATTACK_FIN = ["img/1.Sharkie/4.Attack/Fin slap/1.png", "img/1.Sharkie/4.Attack/Fin slap/2.png", "img/1.Sharkie/4.Attack/Fin slap/3.png", "img/1.Sharkie/4.Attack/Fin slap/4.png", "img/1.Sharkie/4.Attack/Fin slap/5.png", "img/1.Sharkie/4.Attack/Fin slap/6.png", "img/1.Sharkie/4.Attack/Fin slap/7.png", "img/1.Sharkie/4.Attack/Fin slap/8.png"];
   IMAGES_HURT_POISON = ["img/1.Sharkie/5.Hurt/1.Poisoned/1.png", "img/1.Sharkie/5.Hurt/1.Poisoned/2.png", "img/1.Sharkie/5.Hurt/1.Poisoned/3.png", "img/1.Sharkie/5.Hurt/1.Poisoned/4.png", "img/1.Sharkie/5.Hurt/1.Poisoned/5.png"];
-  IMAGES_HURT_ELECTRIC = ["img/1.Sharkie/5.Hurt/2.Electric shock/.o1.png", "img/1.Sharkie/5.Hurt/2.Electric shock/.o2.png", "img/1.Sharkie/5.Hurt/2.Electric shock/.o3.png"];
+  IMAGES_HURT_ELECTRIC = ["img/1.Sharkie/5.Hurt/2.Electric shock/o1.png", "img/1.Sharkie/5.Hurt/2.Electric shock/o2.png", "img/1.Sharkie/5.Hurt/2.Electric shock/1.png", "img/1.Sharkie/5.Hurt/2.Electric shock/2.png", "img/1.Sharkie/5.Hurt/2.Electric shock/3.png"];
   IMAGES_DEAD = ["img/1.Sharkie/6.dead/1.Poisoned/1.png", "img/1.Sharkie/6.dead/1.Poisoned/2.png", "img/1.Sharkie/6.dead/1.Poisoned/3.png", "img/1.Sharkie/6.dead/1.Poisoned/4.png", "img/1.Sharkie/6.dead/1.Poisoned/5.png", "img/1.Sharkie/6.dead/1.Poisoned/6.png", "img/1.Sharkie/6.dead/1.Poisoned/7.png", "img/1.Sharkie/6.dead/1.Poisoned/8.png", "img/1.Sharkie/6.dead/1.Poisoned/9.png", "img/1.Sharkie/6.dead/1.Poisoned/10.png", "img/1.Sharkie/6.dead/1.Poisoned/11.png", "img/1.Sharkie/6.dead/1.Poisoned/12.png"];
-
-  AUDIO_HURT_PUFFER = new Audio("audio/hurtPuffer.mp3"); 
 
   constructor() {
     super();
+    this.world = world;
     this.loadImage(this.IMAGES_HOVER[0]);
     this.loadImages(this.IMAGES_HOVER);
     this.loadImages(this.IMAGES_SLEEP);
@@ -88,28 +87,46 @@ class Sharky extends MovableObjects {
         this.swimDown = true;
         this.swimUp = false;
       }
+      if (this.world.keyboard.SPACE) {
+        this.isAttacking = true;
+      } else {
+        this.isAttacking = false;
+      }
       this.world.camera_x = -this.x + 60;
     }, 1000 / 60);
 
     setInterval(() => {
-      if (this.isDead()) {
-        this.playAnimation(this.IMAGES_DEAD);
-      } else if (this.isHurt()) {
+      if (this.isHurt()) {
         this.playAnimation(this.IMAGES_HURT_POISON);
+      } else if (this.world.keyboard.SPACE) {
+        this.world.level.enemies.forEach((enemy, index) => {
+          if (enemy instanceof Puffers && enemy.isInProximity()) {
+            this.playAnimation(this.IMAGES_ATTACK_FIN);
+            if (enemy instanceof Puffers && this.isColliding(enemy)) {
+              setTimeout(() => {
+                enemy.reactToHit();
+              }, 200);
+              this.specialAttackPlayed = true;
+            }
+          } else if (enemy instanceof Jellyfish && enemy.isInProximity()) {
+            this.playAnimation(this.IMAGES_ATTACK_BUBBLE);
+            enemy.reactToHit();
+            this.specialAttackPlayed = true;
+          } else if (enemy instanceof Boss && enemy.isInProximity()) {
+            this.playAnimation(this.IMAGES_ATTACK_BUBBLE_POISON);
+            enemy.reactToHit();
+            this.specialAttackPlayed = true;
+          }
+        });
       } else if (!this.world.keyboard.LEFT && !this.world.keyboard.RIGHT && !this.world.keyboard.UP && !this.world.keyboard.DOWN) {
-        // with this function I call upon the individual images HOVER as I an not pressing any key and store them in my imageCache
         this.playAnimation(this.IMAGES_HOVER);
         this.swimUp = false;
         this.swimDown = false;
+        this.specialAttackPlayed = false;
       } else if (this.world.keyboard.RIGHT || this.world.keyboard.LEFT || this.world.keyboard.UP || this.world.keyboard.DOWN) {
-        // with this function I call upon the individual images SWIM as I am pressing a key and store them in my imageCache
         this.playAnimation(this.IMAGES_SWIM);
+        this.specialAttackPlayed = false;
       }
     }, 200);
-  }
-
-  playSoundHurt() {
-    this.AUDIO_HURT_PUFFER.currentTime = 0; 
-    this.AUDIO_HURT_PUFFER.play();
   }
 }
