@@ -3,10 +3,10 @@ class Puffers extends MovableObjects {
   height = this.width;
 
   offset = {
-    top: 10,
-    left: 5,
-    right: 10,
-    bottom: 20,
+    top: 5,
+    left: -0,
+    right : 1,
+    bottom: 5,
   };
   energy = 20;
   lastSoundTime;
@@ -65,7 +65,7 @@ class Puffers extends MovableObjects {
     this.energy = 0;
     this.playAnimationOnce(this.IMAGES_DEAD, () => {
       this.img = this.imageCache[this.IMAGES_DEAD[2]];
-      let hitSpeed = this.speed * 5;
+      let hitSpeed = this.speed * 8;
       let floatInterval = setInterval(() => {
         this.x -= hitSpeed;
         this.y -= hitSpeed;

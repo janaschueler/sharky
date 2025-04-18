@@ -4,9 +4,9 @@ class Sharky extends MovableObjects {
   y = 100;
   speed = 10;
   offset = {
-    top: 110,
-    left: +50,
-    right: 45,
+    top: 90,
+    left: +40,
+    right: 30,
     bottom: +50,
   };
   world;
@@ -108,7 +108,7 @@ class Sharky extends MovableObjects {
               }, 200);
               this.specialAttackPlayed = true;
             }
-          } else if (enemy instanceof Jellyfish && enemy.isInProximity()) {
+          } else if (enemy instanceof Jellyfish && enemy.isInProximity() && !enemy.dead) {
             this.playAnimation(this.IMAGES_ATTACK_BUBBLE);
             enemy.reactToHit();
             this.specialAttackPlayed = true;

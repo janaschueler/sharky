@@ -12,13 +12,18 @@ class MovableObjects extends DrawableObject {
   specialAttackPlayed = false;
 
   playAnimation(images) {
+    if (this.dead && images !== this.IMAGES_DEAD) return;
     let i = this.currentImage % images.length;
     let path = images[i];
     this.img = this.imageCache[path];
     this.currentImage++;
   }
+  
 
   playAnimationOnce(images, callback) {
+    if (this.dead) {
+      return;
+    }
     let index = 0;
     let interval = setInterval(() => {
       this.img = this.imageCache[images[index]];
@@ -31,6 +36,9 @@ class MovableObjects extends DrawableObject {
   }
 
   moveLeft() {
+    if (this.dead) {
+      return;
+    }
     let direction = 1;
     setInterval(() => {
       // with this function I move the object to the left with a speed of 1 * speed
@@ -65,6 +73,14 @@ class MovableObjects extends DrawableObject {
     const adjustedY = this.y + this.height - this.offset.bottom + 60;
     const adjustedWidth = obj.x + obj.width - obj.offset.left + 60;
     const adjustedHeight = obj.y + obj.height - obj.offset.top + 60;
+    return adjustedX >= obj.x + obj.offset.left && this.x + this.offset.left <= adjustedWidth && adjustedY >= obj.y + obj.offset.top && this.y + this.offset.top <= adjustedHeight;
+  }
+
+  bossIsClose(obj) {
+    const adjustedX = this.x + this.width - this.offset.right + 120;
+    const adjustedY = this.y + this.height - this.offset.bottom + 120;
+    const adjustedWidth = obj.x + obj.width - obj.offset.left + 120;
+    const adjustedHeight = obj.y + obj.height - obj.offset.top + 120;
     return adjustedX >= obj.x + obj.offset.left && this.x + this.offset.left <= adjustedWidth && adjustedY >= obj.y + obj.offset.top && this.y + this.offset.top <= adjustedHeight;
   }
 
@@ -107,6 +123,7 @@ class MovableObjects extends DrawableObject {
   }
 
   startAttack() {
+    if (this.dead) return;
     if (!this.isAttacking) {
       this.isAttacking = true;
       this.playAnimationOnce(this.IMAGES_ATTACKING, () => {

@@ -21,6 +21,11 @@ class DrawableObject {
     });
   }
 
+  clearImageCache() {
+    this.imageCache = {};
+    this.currentImage = 0;
+  }
+
   draw(ctx) {
     try {
       ctx.drawImage(this.img, this.x, this.y, this.width, this.height);
@@ -31,7 +36,7 @@ class DrawableObject {
   }
 
   drawFrame(ctx) {
-    if (this instanceof Jellyfish || this instanceof Boss) {
+    if (this instanceof Jellyfish ) {
       ctx.beginPath();
       ctx.lineWidth = "3";
       ctx.strokeStyle = "blue";
@@ -47,6 +52,14 @@ class DrawableObject {
     }
 
     if (this instanceof Puffers) {
+      ctx.beginPath();
+      ctx.lineWidth = "3";
+      ctx.strokeStyle = "blue";
+      ctx.rect(this.x + this.offset.left, this.y + this.offset.top, this.width - (this.offset.left + this.offset.right), this.height - (this.offset.top + this.offset.bottom));
+      ctx.stroke();
+    }
+
+    if (this instanceof Boss) {
       ctx.beginPath();
       ctx.lineWidth = "3";
       ctx.strokeStyle = "blue";

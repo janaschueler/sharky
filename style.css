@@ -2,7 +2,20 @@ body {
   display: flex;
   align-items: center;
   flex-direction: column;
+  font-family: "LuckiestGuy", sans-serif;
 }
+
 canvas {
   background-color: black;
+}
+
+h1 {
+  font-family: "LuckiestGuy", sans-serif;
+}
+
+@font-face {
+  font-family: "LuckiestGuy";
+  src: url("./img/5.Font/Luckiest_Guy/LuckiestGuy-Regular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
 }

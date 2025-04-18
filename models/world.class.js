@@ -84,8 +84,16 @@ class World {
 
   checkProximity() {
     setInterval(() => {
-      this.level.enemies.forEach((enemy) => {
-        if (this.character.isClose(enemy)) {
+      const allEnemies = [...this.level.enemies, this.boss];
+      allEnemies.forEach((enemy) => {
+        let isClose;
+        if (enemy === this.boss) {
+          isClose = this.character.bossIsClose(enemy);
+        } else {
+          isClose = this.character.isClose(enemy);
+        }
+
+        if (isClose) {
           enemy.closeBy();
         } else {
           enemy.farAway();
