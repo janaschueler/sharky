@@ -18,12 +18,8 @@ class MovableObjects extends DrawableObject {
     this.img = this.imageCache[path];
     this.currentImage++;
   }
-  
 
   playAnimationOnce(images, callback) {
-    if (this.dead) {
-      return;
-    }
     let index = 0;
     let interval = setInterval(() => {
       this.img = this.imageCache[images[index]];
@@ -36,28 +32,25 @@ class MovableObjects extends DrawableObject {
   }
 
   moveLeft() {
-    if (this.dead) {
-      return;
-    }
+    if (this.moveInterval) clearInterval(this.moveInterval);
+
     let direction = 1;
-    setInterval(() => {
-      // with this function I move the object to the left with a speed of 1 * speed
+    this.moveInterval = setInterval(() => {
+      if (this.dead) {
+        clearInterval(this.moveInterval);
+        return;
+      }
+
       this.x -= this.speed;
       this.y += this.speed * direction;
     }, 1000 / 60);
+
     const toggleDirection = () => {
-      //this a a variable with a function - after a random time the direction changes
       direction *= -1;
       let randomTime = Math.random() * 11000 + 1000;
       setTimeout(toggleDirection, randomTime);
     };
-    toggleDirection(); // I call the function toggleDirection
-  }
-
-  transition(img) {
-    setInterval(() => {
-      this.playAnimation(img);
-    }, 200);
+    toggleDirection();
   }
 
   // prettier-ignore
@@ -77,10 +70,10 @@ class MovableObjects extends DrawableObject {
   }
 
   bossIsClose(obj) {
-    const adjustedX = this.x + this.width - this.offset.right + 120;
-    const adjustedY = this.y + this.height - this.offset.bottom + 120;
-    const adjustedWidth = obj.x + obj.width - obj.offset.left + 120;
-    const adjustedHeight = obj.y + obj.height - obj.offset.top + 120;
+    const adjustedX = this.x + this.width - this.offset.right + 160;
+    const adjustedY = this.y + this.height - this.offset.bottom + 160;
+    const adjustedWidth = obj.x + obj.width - obj.offset.left + 160;
+    const adjustedHeight = obj.y + obj.height - obj.offset.top + 160;
     return adjustedX >= obj.x + obj.offset.left && this.x + this.offset.left <= adjustedWidth && adjustedY >= obj.y + obj.offset.top && this.y + this.offset.top <= adjustedHeight;
   }
 
@@ -98,6 +91,8 @@ class MovableObjects extends DrawableObject {
 
   hit() {
     let now = new Date().getTime();
+    if (this.isAttacking) return;
+    if (this.world.keyboard.SPACE) return;
     if ((!this.lastHit || now - this.lastHit >= 3000) && !this.specialAttackPlayed) {
       this.energy -= 20;
       if (this.energy < 0) {
@@ -123,7 +118,6 @@ class MovableObjects extends DrawableObject {
   }
 
   startAttack() {
-    if (this.dead) return;
     if (!this.isAttacking) {
       this.isAttacking = true;
       this.playAnimationOnce(this.IMAGES_ATTACKING, () => {

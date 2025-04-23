@@ -50,14 +50,19 @@ class World {
   }
 
   checkEnemyCollisions() {
-    this.level.enemies.forEach((enemy) => {
+    const allEnemies = [...this.level.enemies, this.boss];
+  
+    allEnemies.forEach((enemy) => {
       if (this.character.isColliding(enemy)) {
         this.character.hit();
-        enemy.playSoundHurt();
+        if (enemy.playSoundHurt) {
+          enemy.playSoundHurt();
+        }
         this.statusBar.setPercentage(this.character.energy);
       }
     });
   }
+  
 
   checkCollectableCollisions() {
     this.level.collectables.forEach((collectable, index) => {
@@ -104,7 +109,7 @@ class World {
 
   checkEnemyState() {
     setInterval(() => {
-      this.level.enemies = this.level.enemies.filter((enemy) => !enemy.markedForRemoval);
+        this.level.enemies = this.level.enemies.filter((enemy) => !enemy.markedForRemoval);
     }, 200);
   }
 

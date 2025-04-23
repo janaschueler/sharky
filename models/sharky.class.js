@@ -11,11 +11,15 @@ class Sharky extends MovableObjects {
   };
   world;
 
+  lastActionTime = Date.now();
+  isSleeping = false;
+
   IMAGES_HOVER = ["img/1.Sharkie/1.IDLE/1.png", "img/1.Sharkie/1.IDLE/2.png", "img/1.Sharkie/1.IDLE/3.png", "img/1.Sharkie/1.IDLE/4.png", "img/1.Sharkie/1.IDLE/5.png", "img/1.Sharkie/1.IDLE/6.png", "img/1.Sharkie/1.IDLE/7.png", "img/1.Sharkie/1.IDLE/8.png", "img/1.Sharkie/1.IDLE/9.png", "img/1.Sharkie/1.IDLE/10.png", "img/1.Sharkie/1.IDLE/11.png", "img/1.Sharkie/1.IDLE/12.png", "img/1.Sharkie/1.IDLE/13.png", "img/1.Sharkie/1.IDLE/14.png", "img/1.Sharkie/1.IDLE/15.png", "img/1.Sharkie/1.IDLE/16.png", "img/1.Sharkie/1.IDLE/17.png", "img/1.Sharkie/1.IDLE/18.png"];
   IMAGES_SLEEP = ["img/1.Sharkie/2.Long_IDLE/i1.png", "img/1.Sharkie/2.Long_IDLE/i2.png", "img/1.Sharkie/2.Long_IDLE/i3.png", "img/1.Sharkie/2.Long_IDLE/i4.png", "img/1.Sharkie/2.Long_IDLE/i5.png", "img/1.Sharkie/2.Long_IDLE/i6.png", "img/1.Sharkie/2.Long_IDLE/i7.png", "img/1.Sharkie/2.Long_IDLE/i8.png", "img/1.Sharkie/2.Long_IDLE/i9.png", "img/1.Sharkie/2.Long_IDLE/i10.png", "img/1.Sharkie/2.Long_IDLE/i11.png", "img/1.Sharkie/2.Long_IDLE/i12.png", "img/1.Sharkie/2.Long_IDLE/i13.png", "img/1.Sharkie/2.Long_IDLE/i14.png"];
   IMAGES_SWIM = ["img/1.Sharkie/3.Swim/1.png", "img/1.Sharkie/3.Swim/2.png", "img/1.Sharkie/3.Swim/3.png", "img/1.Sharkie/3.Swim/4.png", "img/1.Sharkie/3.Swim/5.png", "img/1.Sharkie/3.Swim/6.png"];
   IMAGES_ATTACK_BUBBLE = ["img/1.Sharkie/4.Attack/Bubble trap/op1/1.png", "img/1.Sharkie/4.Attack/Bubble trap/op1/2.png", "img/1.Sharkie/4.Attack/Bubble trap/op1/3.png", "img/1.Sharkie/4.Attack/Bubble trap/op1/4.png", "img/1.Sharkie/4.Attack/Bubble trap/op1/5.png", "img/1.Sharkie/4.Attack/Bubble trap/op1/6.png", "img/1.Sharkie/4.Attack/Bubble trap/op1/7.png", "img/1.Sharkie/4.Attack/Bubble trap/op1/8.png"];
   IMAGES_ATTACK_FIN = ["img/1.Sharkie/4.Attack/Fin slap/1.png", "img/1.Sharkie/4.Attack/Fin slap/2.png", "img/1.Sharkie/4.Attack/Fin slap/3.png", "img/1.Sharkie/4.Attack/Fin slap/4.png", "img/1.Sharkie/4.Attack/Fin slap/5.png", "img/1.Sharkie/4.Attack/Fin slap/6.png", "img/1.Sharkie/4.Attack/Fin slap/7.png", "img/1.Sharkie/4.Attack/Fin slap/8.png"];
+  IMAGES_ATTACK_BUBBLE_POISON = ["img/1.Sharkie/4.Attack/Bubble trap/For Whale/1.png", "img/1.Sharkie/4.Attack/Bubble trap/For Whale/2.png", "img/1.Sharkie/4.Attack/Bubble trap/For Whale/3.png", "img/1.Sharkie/4.Attack/Bubble trap/For Whale/4.png", "img/1.Sharkie/4.Attack/Bubble trap/For Whale/5.png", "img/1.Sharkie/4.Attack/Bubble trap/For Whale/6.png", "img/1.Sharkie/4.Attack/Bubble trap/For Whale/7.png", "img/1.Sharkie/4.Attack/Bubble trap/For Whale/8.png"];
   IMAGES_HURT_POISON = ["img/1.Sharkie/5.Hurt/1.Poisoned/1.png", "img/1.Sharkie/5.Hurt/1.Poisoned/2.png", "img/1.Sharkie/5.Hurt/1.Poisoned/3.png", "img/1.Sharkie/5.Hurt/1.Poisoned/4.png", "img/1.Sharkie/5.Hurt/1.Poisoned/5.png"];
   IMAGES_HURT_ELECTRIC = ["img/1.Sharkie/5.Hurt/2.Electric shock/o1.png", "img/1.Sharkie/5.Hurt/2.Electric shock/o2.png", "img/1.Sharkie/5.Hurt/2.Electric shock/1.png", "img/1.Sharkie/5.Hurt/2.Electric shock/2.png", "img/1.Sharkie/5.Hurt/2.Electric shock/3.png"];
   IMAGES_DEAD = ["img/1.Sharkie/6.dead/1.Poisoned/1.png", "img/1.Sharkie/6.dead/1.Poisoned/2.png", "img/1.Sharkie/6.dead/1.Poisoned/3.png", "img/1.Sharkie/6.dead/1.Poisoned/4.png", "img/1.Sharkie/6.dead/1.Poisoned/5.png", "img/1.Sharkie/6.dead/1.Poisoned/6.png", "img/1.Sharkie/6.dead/1.Poisoned/7.png", "img/1.Sharkie/6.dead/1.Poisoned/8.png", "img/1.Sharkie/6.dead/1.Poisoned/9.png", "img/1.Sharkie/6.dead/1.Poisoned/10.png", "img/1.Sharkie/6.dead/1.Poisoned/11.png", "img/1.Sharkie/6.dead/1.Poisoned/12.png"];
@@ -36,97 +40,136 @@ class Sharky extends MovableObjects {
     this.animate();
   }
 
-  /**
-   * Animates the sharky object by updating its position and triggering animations
-   * based on keyboard input. The method uses two intervals:
-   *
-   * 1. Updates the position of the object and camera based on keyboard input
-   *    (e.g., moving left or right).
-   * 2. Plays the appropriate animation (hover or swim) depending on whether
-   *    any movement keys are pressed.
-   *
-   * @method
-   */
   animate() {
     setInterval(() => {
-      if (this.world.keyboard.RIGHT && this.x < this.world.level.level_end_x) {
-        this.x += this.speed; // I move the object to the right with a speed of 10ms
-        this.otherDirection = false; // I keep the order of the images
-        this.swimUp = false;
-        this.swimDown = false;
+      const k = this.world.keyboard;
+
+      if (k.RIGHT && this.x < this.world.level.level_end_x) {
+        this.x += this.speed;
+        this.otherDirection = false;
+        this.resetSleep();
       }
-      if (this.world.keyboard.LEFT && this.x > -1300) {
+      if (k.LEFT && this.x > -1300) {
         this.x -= this.speed;
-        this.otherDirection = true; // I flip the image
-        this.swimUp = false;
-        this.swimDown = false;
+        this.otherDirection = true;
+        this.resetSleep();
       }
-      if (this.world.keyboard.UP && this.otherDirection === false && this.x > -1300 && this.x < this.world.level.level_end_x && this.y > -80) {
+      if (k.UP && !this.otherDirection && this.x > -1300 && this.x < this.world.level.level_end_x && this.y > -80) {
         this.x += this.speed;
         this.y -= this.speed / 5;
         this.swimUp = true;
         this.swimDown = false;
+        this.resetSleep();
       }
-
-      if (this.world.keyboard.UP && this.otherDirection === true && this.x > -1300 && this.x < 2000 && this.y > -80) {
+      if (k.UP && this.otherDirection && this.x > -1300 && this.x < 2000 && this.y > -80) {
         this.x -= this.speed;
         this.y -= this.speed / 5;
         this.swimUp = true;
         this.swimDown = false;
+        this.resetSleep();
       }
-
-      if (this.world.keyboard.DOWN && this.otherDirection === false && this.x > -1300 && this.x < this.world.level.level_end_x && this.y < 400) {
+      if (k.DOWN && !this.otherDirection && this.x > -1300 && this.x < this.world.level.level_end_x && this.y < 400) {
         this.x += this.speed;
         this.y += this.speed / 5;
         this.swimDown = true;
         this.swimUp = false;
+        this.resetSleep();
       }
-      if (this.world.keyboard.DOWN && this.otherDirection === true && this.x > -1300 && this.x < 2000 && this.y < 400) {
+      if (k.DOWN && this.otherDirection && this.x > -1300 && this.x < 2000 && this.y < 400) {
         this.x -= this.speed;
         this.y += this.speed / 5;
         this.swimDown = true;
         this.swimUp = false;
+        this.resetSleep();
       }
-      if (this.world.keyboard.SPACE) {
+
+      if (k.SPACE) {
         this.isAttacking = true;
+        this.resetSleep();
       } else {
         this.isAttacking = false;
       }
+
       this.world.camera_x = -this.x + 60;
     }, 1000 / 60);
 
     setInterval(() => {
+      const now = Date.now();
+      if (now - this.lastActionTime > 3000) {
+        this.isSleeping = true;
+      } else {
+        this.isSleeping = false;
+      }
       if (this.isHurt()) {
         this.playAnimation(this.IMAGES_HURT_POISON);
-      } else if (this.world.keyboard.SPACE) {
-        this.world.level.enemies.forEach((enemy, index) => {
-          if (enemy instanceof Puffers && enemy.isInProximity()) {
-            this.playAnimation(this.IMAGES_ATTACK_FIN);
-            if (enemy instanceof Puffers && this.isColliding(enemy)) {
-              setTimeout(() => {
-                enemy.reactToHit();
-              }, 200);
-              this.specialAttackPlayed = true;
-            }
-          } else if (enemy instanceof Jellyfish && enemy.isInProximity() && !enemy.dead) {
-            this.playAnimation(this.IMAGES_ATTACK_BUBBLE);
-            enemy.reactToHit();
-            this.specialAttackPlayed = true;
-          } else if (enemy instanceof Boss && enemy.isInProximity()) {
-            this.playAnimation(this.IMAGES_ATTACK_BUBBLE_POISON);
-            enemy.reactToHit();
-            this.specialAttackPlayed = true;
-          }
-        });
-      } else if (!this.world.keyboard.LEFT && !this.world.keyboard.RIGHT && !this.world.keyboard.UP && !this.world.keyboard.DOWN) {
-        this.playAnimation(this.IMAGES_HOVER);
-        this.swimUp = false;
-        this.swimDown = false;
-        this.specialAttackPlayed = false;
-      } else if (this.world.keyboard.RIGHT || this.world.keyboard.LEFT || this.world.keyboard.UP || this.world.keyboard.DOWN) {
-        this.playAnimation(this.IMAGES_SWIM);
-        this.specialAttackPlayed = false;
+        return;
+      }
+      if (this.world.keyboard.SPACE) {
+        this.handleAttackAnimation();
+      } else if (this.isSleeping) {
+        this.playAnimation(this.IMAGES_SLEEP);
+      } else if (this.isIdle()) {
+        this.handleIdle();
+      } else {
+        this.handleSwim();
       }
     }, 200);
+  }
+
+  handleAttackAnimation() {
+    this.world.level.enemies.forEach((enemy) => {
+      if (this.startFinAttack(enemy)) {
+        this.playAnimation(this.IMAGES_ATTACK_FIN);
+        if (this.isColliding(enemy)) {
+          setTimeout(() => enemy.reactToHit(), 200);
+        }
+        return;
+      } else if (this.startBubbleAttack(enemy)) {
+        this.playAnimation(this.IMAGES_ATTACK_BUBBLE);
+        enemy.reactToHit();
+        return;
+      }
+    });
+
+    const boss = this.world.boss;
+    if (this.startPoisonAttack(boss)) {
+      this.playAnimation(this.IMAGES_ATTACK_BUBBLE_POISON);
+      boss.reactToHit();
+      return;
+    }
+  }
+
+  startFinAttack(enemy) {
+    const isTarget = enemy instanceof Puffers;
+    const isInRange = this.isClose(enemy) || this.isColliding(enemy);
+    console.log("Fin Attack Check:", { isTarget, isInRange, result: isTarget && isInRange });
+    return isTarget && isInRange;
+  }
+
+  startBubbleAttack(enemy) {
+    return enemy instanceof Jellyfish && (this.isClose(enemy) || this.isColliding(enemy));
+  }
+
+  startPoisonAttack(enemy) {
+    return enemy instanceof Boss && (this.isClose(enemy) || this.isColliding(enemy));
+  }
+
+  isIdle() {
+    const k = this.world.keyboard;
+    return !k.LEFT && !k.RIGHT && !k.UP && !k.DOWN;
+  }
+
+  handleIdle() {
+    this.playAnimation(this.IMAGES_HOVER);
+    this.swimUp = false;
+    this.swimDown = false;
+  }
+
+  handleSwim() {
+    this.playAnimation(this.IMAGES_SWIM);
+  }
+
+  resetSleep() {
+    this.lastActionTime = Date.now();
   }
 }

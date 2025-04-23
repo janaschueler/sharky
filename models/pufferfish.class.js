@@ -4,12 +4,15 @@ class Puffers extends MovableObjects {
 
   offset = {
     top: 5,
-    left: -0,
-    right : 1,
+    left: 0,
+    right: 1,
     bottom: 5,
   };
   energy = 20;
-  lastSoundTime;
+  dead = false;
+  hasStartedFloating = false;
+  hasPlayedDeathAnimation = false;
+  markedForRemoval = false;
 
   IMAGES_SWIM = ["img/2.Enemy/1.Pufferfish/1.Swim/3.swim1.png", "img/2.Enemy/1.Pufferfish/1.Swim/3.swim2.png", "img/2.Enemy/1.Pufferfish/1.Swim/3.swim3.png", "img/2.Enemy/1.Pufferfish/1.Swim/3.swim4.png", "img/2.Enemy/1.Pufferfish/1.Swim/3.swim5.png"];
   IMAGES_TRANSITION = ["img/2.Enemy/1.Pufferfish/2.transition/3.transition1.png", "img/2.Enemy/1.Pufferfish/2.transition/3.transition2.png", "img/2.Enemy/1.Pufferfish/2.transition/3.transition3.png", "img/2.Enemy/1.Pufferfish/2.transition/3.transition4.png", "img/2.Enemy/1.Pufferfish/2.transition/3.transition5.png"];
@@ -25,6 +28,7 @@ class Puffers extends MovableObjects {
     this.loadImages(this.IMAGES_TRANSITION);
     this.loadImages(this.IMAGES_ATTACKING);
     this.loadImages(this.IMAGES_DEAD);
+    this.moveLeft();
 
     this.x = 300 + Math.random() * 900;
     this.y = 0 + Math.random() * 400;
@@ -33,7 +37,14 @@ class Puffers extends MovableObjects {
 
   animate() {
     setInterval(() => {
-      if (this.markedForRemoval || this.isDead()) {
+      if (this.dead) {
+        if (!this.hasPlayedDeathAnimation) {
+          this.hasPlayedDeathAnimation = true;
+          this.playAnimationOnce(this.IMAGES_DEAD, () => {
+            this.img = this.imageCache[this.IMAGES_DEAD[2]];
+            this.hasStartedFloating = true;
+          });
+        }
         return;
       }
       if (this.isInProximity()) {
@@ -44,7 +55,31 @@ class Puffers extends MovableObjects {
         this.playAnimation(this.IMAGES_SWIM);
       }
     }, 200);
-    this.moveLeft();
+
+    setInterval(() => {
+      if (this.hasStartedFloating) {
+        let floatSpeed = this.hasSlowedDown ? this.speed * 10 : this.speed * 20;
+        this.y -= floatSpeed;
+        this.x -= floatSpeed;
+        if (!this.hasSlowedDown) {
+          setTimeout(() => {
+            this.hasSlowedDown = true;
+          }, 400);
+        }
+        if (this.y + this.height < 0) {
+          this.markedForRemoval = true;
+        }
+      }
+    }, 1000 / 60);
+  }
+
+  reactToHit() {
+    if (this.dead) {
+      return;
+    } else {
+      this.dead = true;
+      this.currentImage = 0;
+    }
   }
 
   playSoundHurt() {
@@ -59,21 +94,5 @@ class Puffers extends MovableObjects {
       this.AUDIO_HURT.pause();
       this.AUDIO_HURT.currentTime = 0;
     }, 1300);
-  }
-
-  reactToHit() {
-    this.energy = 0;
-    this.playAnimationOnce(this.IMAGES_DEAD, () => {
-      this.img = this.imageCache[this.IMAGES_DEAD[2]];
-      let hitSpeed = this.speed * 8;
-      let floatInterval = setInterval(() => {
-        this.x -= hitSpeed;
-        this.y -= hitSpeed;
-        if (this.y + this.height < 0) {
-          clearInterval(floatInterval);
-          this.markedForRemoval = true;
-        }
-      }, 1000 / 60);
-    });
   }
 }

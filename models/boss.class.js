@@ -85,5 +85,14 @@ class Boss extends MovableObjects {
       }
     }
   }
+
+  reactToHit() {
+    if (this.dead) return;
+    this.energy -= 20; 
+    if (this.energy <= 0) {
+      this.dead = true;
+      this.currentImage = 0;
+    }
+  }
   
 }
