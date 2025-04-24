@@ -11,6 +11,7 @@ class World {
   statusBar = new StatusBarLife();
   statusBarCoins = new StatusBarCoins();
   statusBarPoison = new StatusBarPoison();
+  backgroundMusic = new Audio("audio/wave_sounds.mp3");
 
   /**
    * Creates an instance of the World class.
@@ -32,6 +33,7 @@ class World {
     this.checkCollisions();
     this.checkProximity();
     this.checkEnemyState();
+    this.initBackgroundMusic();
   }
 
   /**
@@ -51,7 +53,7 @@ class World {
 
   checkEnemyCollisions() {
     const allEnemies = [...this.level.enemies, this.boss];
-  
+
     allEnemies.forEach((enemy) => {
       if (this.character.isColliding(enemy)) {
         this.character.hit();
@@ -62,7 +64,6 @@ class World {
       }
     });
   }
-  
 
   checkCollectableCollisions() {
     this.level.collectables.forEach((collectable, index) => {
@@ -109,7 +110,7 @@ class World {
 
   checkEnemyState() {
     setInterval(() => {
-        this.level.enemies = this.level.enemies.filter((enemy) => !enemy.markedForRemoval);
+      this.level.enemies = this.level.enemies.filter((enemy) => !enemy.markedForRemoval);
     }, 200);
   }
 
@@ -226,5 +227,23 @@ class World {
    */
   flipImageBack(mo) {
     mo.x = mo.x * -1;
+  }
+
+  initBackgroundMusic() {
+    this.backgroundMusic.loop = true;
+    this.backgroundMusic.volume = 0.2;
+
+    const playMusic = () => {
+      this.backgroundMusic.play().catch((e) => {
+        console.warn("🎵 Hintergrundmusik konnte nicht gestartet werden:", e);
+      });
+      // Damit es nur 1x ausgeführt wird:
+      window.removeEventListener("click", playMusic);
+      window.removeEventListener("keydown", playMusic);
+    };
+
+    // Nur nach Nutzer-Interaktion erlaubt (Browser-Sicherheitsrichtlinie)
+    window.addEventListener("click", playMusic);
+    window.addEventListener("keydown", playMusic);
   }
 }

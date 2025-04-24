@@ -41,12 +41,15 @@ class Puffers extends MovableObjects {
         if (!this.hasPlayedDeathAnimation) {
           this.hasPlayedDeathAnimation = true;
           this.playAnimationOnce(this.IMAGES_DEAD, () => {
-            this.img = this.imageCache[this.IMAGES_DEAD[2]];
-            this.hasStartedFloating = true;
+            this.img = this.imageCache[this.IMAGES_DEAD[this.IMAGES_DEAD.length - 1]];
+            setTimeout(() => {
+              this.hasStartedFloating = true;
+            }, 200);
           });
         }
         return;
       }
+
       if (this.isInProximity()) {
         if (!this.isTransitioning && !this.isAttacking) {
           this.startTransition();
@@ -61,11 +64,13 @@ class Puffers extends MovableObjects {
         let floatSpeed = this.hasSlowedDown ? this.speed * 10 : this.speed * 20;
         this.y -= floatSpeed;
         this.x -= floatSpeed;
+
         if (!this.hasSlowedDown) {
           setTimeout(() => {
             this.hasSlowedDown = true;
           }, 400);
         }
+
         if (this.y + this.height < 0) {
           this.markedForRemoval = true;
         }

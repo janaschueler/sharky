@@ -13,17 +13,32 @@ class MovableObjects extends DrawableObject {
 
   playAnimation(images) {
     if (this.dead && images !== this.IMAGES_DEAD) return;
+
     let i = this.currentImage % images.length;
     let path = images[i];
-    this.img = this.imageCache[path];
+    let img = this.imageCache[path];
+
+    if (!img) {
+      console.log("🚀 ~ playAnimation ~ missing path:", path);
+    }
+
+    this.img = img;
     this.currentImage++;
   }
 
   playAnimationOnce(images, callback) {
     let index = 0;
     let interval = setInterval(() => {
-      this.img = this.imageCache[images[index]];
+      let path = images[index];
+      let img = this.imageCache[path];
+
+      if (!img) {
+        console.log("🚀 ~ MovableObjects ~ interval ~ path:", path);
+      }
+
+      this.img = img;
       index++;
+
       if (index >= images.length) {
         clearInterval(interval);
         if (callback) callback();
@@ -51,6 +66,20 @@ class MovableObjects extends DrawableObject {
       setTimeout(toggleDirection, randomTime);
     };
     toggleDirection();
+  }
+
+  playPingPongAnimation(images) {
+    let index = 0;
+    let direction = 1;
+    this.currentImage = 0;
+    this.pingPongInterval = setInterval(() => {
+      this.img = this.imageCache[images[index]];
+      index += direction;
+
+      if (index >= images.length - 1 || index <= 0) {
+        direction *= -1;
+      }
+    }, 200);
   }
 
   // prettier-ignore

@@ -10,12 +10,15 @@ class Sharky extends MovableObjects {
     bottom: +50,
   };
   world;
-
+  audioStates = {};
   lastActionTime = Date.now();
   isSleeping = false;
+  lastFinSlapTime = 0;
+  finSlapCooldown = 500;
 
   IMAGES_HOVER = ["img/1.Sharkie/1.IDLE/1.png", "img/1.Sharkie/1.IDLE/2.png", "img/1.Sharkie/1.IDLE/3.png", "img/1.Sharkie/1.IDLE/4.png", "img/1.Sharkie/1.IDLE/5.png", "img/1.Sharkie/1.IDLE/6.png", "img/1.Sharkie/1.IDLE/7.png", "img/1.Sharkie/1.IDLE/8.png", "img/1.Sharkie/1.IDLE/9.png", "img/1.Sharkie/1.IDLE/10.png", "img/1.Sharkie/1.IDLE/11.png", "img/1.Sharkie/1.IDLE/12.png", "img/1.Sharkie/1.IDLE/13.png", "img/1.Sharkie/1.IDLE/14.png", "img/1.Sharkie/1.IDLE/15.png", "img/1.Sharkie/1.IDLE/16.png", "img/1.Sharkie/1.IDLE/17.png", "img/1.Sharkie/1.IDLE/18.png"];
-  IMAGES_SLEEP = ["img/1.Sharkie/2.Long_IDLE/i1.png", "img/1.Sharkie/2.Long_IDLE/i2.png", "img/1.Sharkie/2.Long_IDLE/i3.png", "img/1.Sharkie/2.Long_IDLE/i4.png", "img/1.Sharkie/2.Long_IDLE/i5.png", "img/1.Sharkie/2.Long_IDLE/i6.png", "img/1.Sharkie/2.Long_IDLE/i7.png", "img/1.Sharkie/2.Long_IDLE/i8.png", "img/1.Sharkie/2.Long_IDLE/i9.png", "img/1.Sharkie/2.Long_IDLE/i10.png", "img/1.Sharkie/2.Long_IDLE/i11.png", "img/1.Sharkie/2.Long_IDLE/i12.png", "img/1.Sharkie/2.Long_IDLE/i13.png", "img/1.Sharkie/2.Long_IDLE/i14.png"];
+  IMAGES_FALLING_A_SLEEP = ["img/1.Sharkie/2.Long_IDLE/i1.png", "img/1.Sharkie/2.Long_IDLE/I2.png", "img/1.Sharkie/2.Long_IDLE/I3.png", "img/1.Sharkie/2.Long_IDLE/I4.png", "img/1.Sharkie/2.Long_IDLE/I5.png", "img/1.Sharkie/2.Long_IDLE/I6.png", "img/1.Sharkie/2.Long_IDLE/I7.png"];
+  IMAGES_SLEEP = ["img/1.Sharkie/2.Long_IDLE/I8.png", "img/1.Sharkie/2.Long_IDLE/I9.png", "img/1.Sharkie/2.Long_IDLE/I10.png", "img/1.Sharkie/2.Long_IDLE/I11.png", "img/1.Sharkie/2.Long_IDLE/I12.png", "img/1.Sharkie/2.Long_IDLE/I13.png", "img/1.Sharkie/2.Long_IDLE/I14.png"];
   IMAGES_SWIM = ["img/1.Sharkie/3.Swim/1.png", "img/1.Sharkie/3.Swim/2.png", "img/1.Sharkie/3.Swim/3.png", "img/1.Sharkie/3.Swim/4.png", "img/1.Sharkie/3.Swim/5.png", "img/1.Sharkie/3.Swim/6.png"];
   IMAGES_ATTACK_BUBBLE = ["img/1.Sharkie/4.Attack/Bubble trap/op1/1.png", "img/1.Sharkie/4.Attack/Bubble trap/op1/2.png", "img/1.Sharkie/4.Attack/Bubble trap/op1/3.png", "img/1.Sharkie/4.Attack/Bubble trap/op1/4.png", "img/1.Sharkie/4.Attack/Bubble trap/op1/5.png", "img/1.Sharkie/4.Attack/Bubble trap/op1/6.png", "img/1.Sharkie/4.Attack/Bubble trap/op1/7.png", "img/1.Sharkie/4.Attack/Bubble trap/op1/8.png"];
   IMAGES_ATTACK_FIN = ["img/1.Sharkie/4.Attack/Fin slap/1.png", "img/1.Sharkie/4.Attack/Fin slap/2.png", "img/1.Sharkie/4.Attack/Fin slap/3.png", "img/1.Sharkie/4.Attack/Fin slap/4.png", "img/1.Sharkie/4.Attack/Fin slap/5.png", "img/1.Sharkie/4.Attack/Fin slap/6.png", "img/1.Sharkie/4.Attack/Fin slap/7.png", "img/1.Sharkie/4.Attack/Fin slap/8.png"];
@@ -24,18 +27,27 @@ class Sharky extends MovableObjects {
   IMAGES_HURT_ELECTRIC = ["img/1.Sharkie/5.Hurt/2.Electric shock/o1.png", "img/1.Sharkie/5.Hurt/2.Electric shock/o2.png", "img/1.Sharkie/5.Hurt/2.Electric shock/1.png", "img/1.Sharkie/5.Hurt/2.Electric shock/2.png", "img/1.Sharkie/5.Hurt/2.Electric shock/3.png"];
   IMAGES_DEAD = ["img/1.Sharkie/6.dead/1.Poisoned/1.png", "img/1.Sharkie/6.dead/1.Poisoned/2.png", "img/1.Sharkie/6.dead/1.Poisoned/3.png", "img/1.Sharkie/6.dead/1.Poisoned/4.png", "img/1.Sharkie/6.dead/1.Poisoned/5.png", "img/1.Sharkie/6.dead/1.Poisoned/6.png", "img/1.Sharkie/6.dead/1.Poisoned/7.png", "img/1.Sharkie/6.dead/1.Poisoned/8.png", "img/1.Sharkie/6.dead/1.Poisoned/9.png", "img/1.Sharkie/6.dead/1.Poisoned/10.png", "img/1.Sharkie/6.dead/1.Poisoned/11.png", "img/1.Sharkie/6.dead/1.Poisoned/12.png"];
 
+  AUDIO_NO_POISON = new Audio("audio/no_poison.mp3");
+  AUDIO_FIN_SLAP = new Audio("audio/fin-slap.mp3");
+  AUDIO_BUBBLE = new Audio("audio/blow-Attack.mp3");
+  AUDIO_SLEEP = new Audio("audio/sleep.mp3");
+
   constructor() {
     super();
     this.world = world;
     this.loadImage(this.IMAGES_HOVER[0]);
     this.loadImages(this.IMAGES_HOVER);
+    this.loadImages(this.IMAGES_FALLING_A_SLEEP);
     this.loadImages(this.IMAGES_SLEEP);
     this.loadImages(this.IMAGES_SWIM);
     this.loadImages(this.IMAGES_ATTACK_BUBBLE);
+    this.loadImages(this.IMAGES_ATTACK_BUBBLE_POISON);
     this.loadImages(this.IMAGES_ATTACK_FIN);
     this.loadImages(this.IMAGES_HURT_POISON);
     this.loadImages(this.IMAGES_HURT_ELECTRIC);
     this.loadImages(this.IMAGES_DEAD);
+
+    this.setAudioVolumes();
 
     this.animate();
   }
@@ -43,6 +55,10 @@ class Sharky extends MovableObjects {
   animate() {
     setInterval(() => {
       const k = this.world.keyboard;
+
+      if (k.LEFT || k.RIGHT || k.UP || k.DOWN || k.SPACE) {
+        this.stopSound("sleep", this.AUDIO_SLEEP);
+      }
 
       if (k.RIGHT && this.x < this.world.level.level_end_x) {
         this.x += this.speed;
@@ -90,6 +106,10 @@ class Sharky extends MovableObjects {
         this.isAttacking = false;
       }
 
+      if (!k.SPACE) {
+        this.stopSound("bubble", this.AUDIO_BUBBLE);
+      }
+
       this.world.camera_x = -this.x + 60;
     }, 1000 / 60);
 
@@ -107,7 +127,13 @@ class Sharky extends MovableObjects {
       if (this.world.keyboard.SPACE) {
         this.handleAttackAnimation();
       } else if (this.isSleeping) {
-        this.playAnimation(this.IMAGES_SLEEP);
+        if (!this.fallingAsleepStarted) {
+          this.fallingAsleepStarted = true;
+          this.playAnimationOnce(this.IMAGES_FALLING_A_SLEEP, () => {
+            this.playPingPongAnimation(this.IMAGES_SLEEP);
+            this.playLoopedSound("sleep", this.AUDIO_SLEEP);
+          });
+        }
       } else if (this.isIdle()) {
         this.handleIdle();
       } else {
@@ -117,25 +143,37 @@ class Sharky extends MovableObjects {
   }
 
   handleAttackAnimation() {
+    let attackTriggered = false;
     this.world.level.enemies.forEach((enemy) => {
       if (this.startFinAttack(enemy)) {
         this.playAnimation(this.IMAGES_ATTACK_FIN);
+        const now = Date.now();
+        if (now - this.lastFinSlapTime > this.finSlapCooldown) {
+          this.playSound(this.AUDIO_FIN_SLAP);
+          this.lastFinSlapTime = now;
+        }
         if (this.isColliding(enemy)) {
           setTimeout(() => enemy.reactToHit(), 200);
         }
-        return;
+        attackTriggered = true;
       } else if (this.startBubbleAttack(enemy)) {
         this.playAnimation(this.IMAGES_ATTACK_BUBBLE);
+        this.playLoopedSound("bubble", this.AUDIO_BUBBLE);
         enemy.reactToHit();
-        return;
+        attackTriggered = true;
       }
     });
 
     const boss = this.world.boss;
     if (this.startPoisonAttack(boss)) {
       this.playAnimation(this.IMAGES_ATTACK_BUBBLE_POISON);
+      this.playLoopedSound("bubble", this.AUDIO_BUBBLE);
       boss.reactToHit();
-      return;
+      attackTriggered = true;
+    }
+
+    if (!attackTriggered) {
+      this.stopSound("bubble", this.AUDIO_BUBBLE);
     }
   }
 
@@ -171,5 +209,41 @@ class Sharky extends MovableObjects {
 
   resetSleep() {
     this.lastActionTime = Date.now();
+    this.fallingAsleepStarted = false;
+    clearInterval(this.pingPongInterval);
+  }
+
+  playSound(audio) {
+    if (!audio) return;
+    audio.pause();
+    audio.currentTime = 0;
+    audio.play().catch((e) => {
+      console.warn("🔇 Sound konnte nicht abgespielt werden:", e);
+    });
+  }
+
+  playLoopedSound(name, audio) {
+    if (!audio || this.audioStates[name]) return;
+    audio.loop = true;
+    audio.currentTime = 0;
+    audio.play().catch((e) => {
+      console.warn("🔁 Sound konnte nicht abgespielt werden:", e);
+    });
+    this.audioStates[name] = true;
+  }
+
+  stopSound(name, audio) {
+    if (!audio || !this.audioStates[name]) return;
+    audio.pause();
+    audio.currentTime = 0;
+    audio.loop = false;
+    this.audioStates[name] = false;
+  }
+
+  setAudioVolumes() {
+    this.AUDIO_BUBBLE.volume = 0.1;
+    this.AUDIO_FIN_SLAP.volume = 0.5;
+    this.AUDIO_SLEEP.volume = 0.2;
+    this.AUDIO_NO_POISON.volume = 0.5;
   }
 }

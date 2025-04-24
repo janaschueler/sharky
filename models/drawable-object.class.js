@@ -8,15 +8,39 @@ class DrawableObject {
   width = 100;
   offsetY = 0;
 
+  // loadImage(path) {
+  //   this.img = new Image();
+  //   this.img.src = path;
+  // }
+
+  // loadImages(arr) {
+  //   arr.forEach((path) => {
+  //     let img = new Image(); // is a js method to create an image element. It is equivalent to document.createElement("img")
+  //     img.src = path;
+  //     this.imageCache[path] = img;
+  //   });
+  // }
+
   loadImage(path) {
-    this.img = new Image();
-    this.img.src = path;
+    const img = new Image();
+    img.src = path;
+
+    img.onerror = () => {
+      console.warn("❌ Bild konnte nicht geladen werden:", path);
+    };
+
+    this.img = img;
   }
 
   loadImages(arr) {
     arr.forEach((path) => {
-      let img = new Image(); // is a js method to create an image element. It is equivalent to document.createElement("img")
+      const img = new Image();
       img.src = path;
+
+      img.onerror = () => {
+        console.warn("❌ Bild konnte nicht geladen werden:", path);
+      };
+
       this.imageCache[path] = img;
     });
   }
@@ -36,7 +60,7 @@ class DrawableObject {
   }
 
   drawFrame(ctx) {
-    if (this instanceof Jellyfish ) {
+    if (this instanceof Jellyfish) {
       ctx.beginPath();
       ctx.lineWidth = "3";
       ctx.strokeStyle = "blue";
