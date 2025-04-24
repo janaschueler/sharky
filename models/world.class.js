@@ -8,10 +8,18 @@ class World {
   camera_x = 0;
   coins = 0;
   poison = 0;
+  winScreenShown = false;
+  endScreenShown = false;
   statusBar = new StatusBarLife();
   statusBarCoins = new StatusBarCoins();
   statusBarPoison = new StatusBarPoison();
   backgroundMusic = new Audio("audio/wave_sounds.mp3");
+  IMAGES_GAME_OVER = ["img/6.Botones/Tittles/Game Over/Recurso 9.png", "img/6.Botones/Tittles/Game Over/Recurso 10.png", "img/6.Botones/Tittles/Game Over/Recurso 11.png", "img/6.Botones/Tittles/Game Over/Recurso 12.png", "img/6.Botones/Tittles/Game Over/Recurso 13.png"];
+  IMAGES_TRAY_AGAIN = ["img/6.Botones/Try again/Recurso 15.png", "img/6.Botones/Try again/Recurso 16.png", "img/6.Botones/Try again/Recurso 17.png", "img/6.Botones/Try again/Recurso 18.png"];
+  IMAGES_WIN = ["img/6.Botones/Tittles/You win/Mesa de trabajo 1.png"];
+  IMAGES_WIN_ANIMATION = ["img/6.Botones/Tittles/You win/Recurso 19.png", "img/6.Botones/Tittles/You win/Recurso 20.png", "img/6.Botones/Tittles/You win/Recurso 21.png", "img/6.Botones/Tittles/You win/Recurso 22.png"];
+  IMAGES_START_INSTRUCTION = ["img/6.Botones/Instructions 2.png"];
+  IMAGES_START_BUTTON = ["img/6.Botones/Start/1.png", "img/6.Botones/Start/2.png", "img/6.Botones/Start/3.png", "img/6.Botones/Start/4.png"];
 
   /**
    * Creates an instance of the World class.
@@ -34,6 +42,9 @@ class World {
     this.checkProximity();
     this.checkEnemyState();
     this.initBackgroundMusic();
+    this.gameOverLoader = new DrawableObject();
+    this.gameOverLoader.loadImages(this.IMAGES_GAME_OVER);
+    this.gameOverLoader.loadImages(this.IMAGES_TRAY_AGAIN);
   }
 
   /**
@@ -56,6 +67,7 @@ class World {
 
     allEnemies.forEach((enemy) => {
       if (this.character.isColliding(enemy)) {
+        this.character.lastHurtBy = enemy;
         this.character.hit();
         if (enemy.playSoundHurt) {
           enemy.playSoundHurt();
@@ -111,6 +123,11 @@ class World {
   checkEnemyState() {
     setInterval(() => {
       this.level.enemies = this.level.enemies.filter((enemy) => !enemy.markedForRemoval);
+
+      if (this.boss.energy <= 0 && !this.winScreenShown) {
+        this.winScreenShown = true;
+        this.triggerWinScreen();
+      }
     }, 200);
   }
 
@@ -175,7 +192,7 @@ class World {
         this.flipImage(mo);
       }
       mo.draw(this.ctx);
-      mo.drawFrame(this.ctx);
+      // mo.drawFrame(this.ctx);
       if (mo.otherDirection) {
         this.flipImageBack(mo);
       }
@@ -227,6 +244,82 @@ class World {
    */
   flipImageBack(mo) {
     mo.x = mo.x * -1;
+  }
+
+  triggerGameOverScreen() {
+    if (this.endScreenShown) return;
+    this.endScreenShown = true;
+
+    let frame = 0;
+    const gameOverImg = document.createElement("img");
+    gameOverImg.style = `
+      position: absolute;
+      top: 20%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 400px;
+      z-index: 1000;
+    `;
+    document.body.appendChild(gameOverImg);
+
+    setInterval(() => {
+      gameOverImg.src = this.IMAGES_GAME_OVER[frame];
+      frame++;
+      if (frame >= this.IMAGES_GAME_OVER.length) frame = 0;
+    }, 150);
+
+    const tryAgainBtn = document.createElement("img");
+    tryAgainBtn.src = this.IMAGES_TRAY_AGAIN[0];
+    tryAgainBtn.style = `
+      position: absolute;
+      top: 40%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 200px;
+      cursor: pointer;
+      z-index: 1001;
+    `;
+    document.body.appendChild(tryAgainBtn);
+
+    tryAgainBtn.addEventListener("click", () => location.reload());
+  }
+
+  triggerWinScreen() {
+    if (this.endScreenShown) return;
+    this.endScreenShown = true;
+
+    let frame = 0;
+    const winImg = document.createElement("img");
+    winImg.style = `
+      position: absolute;
+      top: 20%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 400px;
+      z-index: 1000;
+    `;
+    document.body.appendChild(winImg);
+
+    setInterval(() => {
+      winImg.src = this.IMAGES_WIN_ANIMATION[frame];
+      frame++;
+      if (frame >= this.IMAGES_WIN_ANIMATION.length) frame = 0;
+    }, 150);
+
+    const tryAgainBtn = document.createElement("img");
+    tryAgainBtn.src = this.IMAGES_TRAY_AGAIN[0];
+    tryAgainBtn.style = `
+      position: absolute;
+      top: 40%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 200px;
+      cursor: pointer;
+      z-index: 1001;
+    `;
+    document.body.appendChild(tryAgainBtn);
+
+    tryAgainBtn.addEventListener("click", () => location.reload());
   }
 
   initBackgroundMusic() {

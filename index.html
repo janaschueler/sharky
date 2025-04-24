@@ -9,18 +9,31 @@
     <title>Sharky | 2D Game</title>
   </head>
 
-  <body onload="init()">
-    <h1>Sharky</h1>
-    <canvas id="canvas" width="720px" height="480px"></canvas>
-  </body>
+ <body onload="init()">
+  <h1>Sharky</h1>
 
-  <script src="./models/world.class.js"></script>
+  <div class="game-container">
+    <canvas id="canvas" width="720" height="480"></canvas>
+
+    <div id="start-screen">
+      <img id="start-background" src="img/6.Botones/Start/start.png" />
+      <img id="start-btn" src="img/6.Botones/Start/1.png" />
+      <img id="instructions" src="img/6.Botones/Instructions 2.png" />
+    </div>
+  </div>
+</body>
+
+
+  <!-- Basis-Klassen zuerst -->
   <script src="./models/drawable-object.class.js"></script>
   <script src="./models/movalble-objects.class.js"></script>
+
+  <!-- Statusbars und Objekte -->
   <script src="./models/status-bar-coins.class.js"></script>
   <script src="./models/status-bar-life.class.js"></script>
   <script src="./models/status-bar-poison.class.js"></script>
-  <script src="./models/sharky.class.js"></script>
+
+  <!-- Gegner und Items -->
   <script src="./models/pufferfish.class.js"></script>
   <script src="./models/jellyfish.class.js"></script>
   <script src="./models/boss.class.js"></script>
@@ -31,7 +44,15 @@
   <script src="./models/keyboard.class.js"></script>
   <script src="./models/throwable-object.class.js"></script>
   <script src="./models/bubble.class.js"></script>
+
+  <!-- Sharky erst hier (weil er von oben abhängig ist) -->
+  <script src="./models/sharky.class.js"></script>
+
+  <!-- Level und Welt -->
   <script src="./models/level.class.js"></script>
   <script src="./levels/level1.js"></script>
+  <script src="./models/world.class.js"></script>
+
+  <!-- Spielstart -->
   <script src="./js/game.js"></script>
 </html>

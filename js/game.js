@@ -1,16 +1,19 @@
-let canvas;
 let world;
+let canvas;
 let keyboard = new Keyboard();
 
 function init() {
-  canvas = document.getElementById("canvas"); // canvas is the id of <canvas>
-  world = new World(canvas, keyboard);
+  canvas = document.getElementById("canvas");
+  setupStartButton();
 }
 
-document.addEventListener("keydown", (event) => {
-  keyboard.pressKey(event.code);
-});
+function setupStartButton() {
+  document.getElementById("start-btn").addEventListener("click", () => {
+    startGame();
+  });
+}
 
-document.addEventListener("keyup", (event) => {
-  keyboard.releaseKey(event.code);
-});
+function startGame() {
+  document.getElementById("start-screen").style.display = "none";
+  world = new World(canvas, keyboard);
+}

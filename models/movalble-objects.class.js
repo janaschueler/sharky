@@ -120,6 +120,7 @@ class MovableObjects extends DrawableObject {
 
   hit() {
     let now = new Date().getTime();
+    if (this.energy <= 0) return false;
     if (this.isAttacking) return;
     if (this.world.keyboard.SPACE) return;
     if ((!this.lastHit || now - this.lastHit >= 3000) && !this.specialAttackPlayed) {

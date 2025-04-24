@@ -4,7 +4,7 @@ class Puffers extends MovableObjects {
 
   offset = {
     top: 5,
-    left: 0,
+    left: 10,
     right: 1,
     bottom: 5,
   };

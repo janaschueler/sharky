@@ -42,18 +42,19 @@ class Boss extends MovableObjects {
   animate() {
     let i = 0;
     setInterval(() => {
-      if (this.energy === 0 && !this.deadAnimationPlayed) {
-        this.deadAnimationPlayed = true;
+      if (this.energy <= 0) {
+        if (!this.deadAnimationPlayed) {
+          this.deadAnimationPlayed = true;
 
-        this.playAnimationOnce(this.IMAGES_DEAD, () => {
-          this.img = this.imageCache[this.IMAGES_DEAD[9]];
-        });
+          this.playAnimationOnce(this.IMAGES_DEAD, () => {
+            this.img = this.imageCache[this.IMAGES_DEAD[this.IMAGES_DEAD.length - 1]];
+          });
+        } else {
+          this.img = this.imageCache[this.IMAGES_DEAD[this.IMAGES_DEAD.length - 1]];
+          if (this.y < 400) this.y += 4; 
+        }
         return;
-      }
-      if (this.energy === 0 && this.deadAnimationPlayed) {
-        this.playAnimation(this.IMAGES_DEAD[9]);
-        return;
-      } else if (this.isHurt()) {
+      } else if (this.isHurt() && this.world.coins >= 5) {
         if (!this.hurtAnimationPlaying) {
           this.hurtAnimationPlaying = true;
           this.playAnimationOnce(this.IMAGES_HURT, () => {
@@ -62,11 +63,11 @@ class Boss extends MovableObjects {
           });
         }
         return;
-      } else if (this.isInProximity() || this.returning) {
+      } else if ((this.isInProximity() || this.returning) && this.world.coins >= 5) {
         this.movingAttack();
         this.playAnimation(this.IMAGES_ATTACKING);
         return;
-      } else if (this.world.character && this.world.character.x > 1000) {
+      } else if (this.world.character && this.world.character.x >= 1000 && this.world.coins >= 5) {
         if (i < this.IMAGES_INTRO.length) {
           this.playAnimation(this.IMAGES_INTRO);
           i++;
