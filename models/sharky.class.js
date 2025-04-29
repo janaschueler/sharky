@@ -18,6 +18,8 @@ class Sharky extends MovableObjects {
   finSlapCooldown = 500;
   lastAttackTime = 0;
   attackCooldown = 1000; // 1 Sekunde Cooldown
+  sleeping = false;
+  isAttackingAnimation = false;
 
   IMAGES_HOVER = ["img/1.Sharkie/1.IDLE/1.png", "img/1.Sharkie/1.IDLE/2.png", "img/1.Sharkie/1.IDLE/3.png", "img/1.Sharkie/1.IDLE/4.png", "img/1.Sharkie/1.IDLE/5.png", "img/1.Sharkie/1.IDLE/6.png", "img/1.Sharkie/1.IDLE/7.png", "img/1.Sharkie/1.IDLE/8.png", "img/1.Sharkie/1.IDLE/9.png", "img/1.Sharkie/1.IDLE/10.png", "img/1.Sharkie/1.IDLE/11.png", "img/1.Sharkie/1.IDLE/12.png", "img/1.Sharkie/1.IDLE/13.png", "img/1.Sharkie/1.IDLE/14.png", "img/1.Sharkie/1.IDLE/15.png", "img/1.Sharkie/1.IDLE/16.png", "img/1.Sharkie/1.IDLE/17.png", "img/1.Sharkie/1.IDLE/18.png"];
   IMAGES_FALLING_A_SLEEP = ["img/1.Sharkie/2.Long_IDLE/i1.png", "img/1.Sharkie/2.Long_IDLE/I2.png", "img/1.Sharkie/2.Long_IDLE/I3.png", "img/1.Sharkie/2.Long_IDLE/I4.png", "img/1.Sharkie/2.Long_IDLE/I5.png", "img/1.Sharkie/2.Long_IDLE/I6.png", "img/1.Sharkie/2.Long_IDLE/I7.png"];
@@ -63,28 +65,41 @@ class Sharky extends MovableObjects {
       if (this.energy <= 0) return;
       if (k.LEFT || k.RIGHT || k.UP || k.DOWN || k.SPACE) {
         this.stopSound("sleep", this.AUDIO_SLEEP);
+        this.resetSleep();
       }
       if (k.RIGHT && this.x < this.world.level.level_end_x) {
         this.x += this.speed;
         this.otherDirection = false;
-        this.resetSleep();
+        this.swimUp = false;
+        this.swimDown = false;
       }
       if (k.LEFT && this.x > -1300) {
         this.x -= this.speed;
         this.otherDirection = true;
-        this.resetSleep();
       }
-      if (k.UP && this.y > -80) {
-        this.y -= this.speed / 5;
+      if (k.UP && this.otherDirection === false && this.x > -1300 && this.x < this.world.level.level_end_x && this.y > -80) {
+        this.x += this.speed / 3;
+        this.y -= this.speed / 1.2;
         this.swimUp = true;
         this.swimDown = false;
-        this.resetSleep();
       }
-      if (k.DOWN && this.y < 400) {
-        this.y += this.speed / 5;
+      if (k.UP && this.otherDirection === true && this.x > -1300 && this.x < 2000 && this.y > -80) {
+        this.x -= this.speed / 3;
+        this.y -= this.speed / 1.2;
+        this.swimUp = true;
+        this.swimDown = false;
+      }
+      if (k.DOWN && this.otherDirection === false && this.x > -1300 && this.x < this.world.level.level_end_x && this.y < 400) {
+        this.x += this.speed / 3;
+        this.y += this.speed / 1.2;
         this.swimDown = true;
         this.swimUp = false;
-        this.resetSleep();
+      }
+      if (k.DOWN && this.otherDirection === true && this.x > -1300 && this.x < 2000 && this.y < 400) {
+        this.x -= this.speed / 3;
+        this.y += this.speed / 1.2;
+        this.swimDown = true;
+        this.swimUp = false;
       }
       this.isAttacking = k.SPACE;
       if (!k.SPACE) {
@@ -97,9 +112,12 @@ class Sharky extends MovableObjects {
       const now = Date.now();
       if (this.energy <= 0) {
         const deathImages = this.lastHurtBy instanceof Jellyfish ? this.IMAGES_DEAD_ELECTROSHOCK : this.IMAGES_DEAD;
+        this.interruptSleep();
+
         if (!this.hasPlayedDeathAnimation) {
           this.hasPlayedDeathAnimation = true;
           this.isDead = true;
+          this.sleeping = false;
           this.playAnimationOnce(deathImages, () => {
             this.img = this.imageCache[deathImages[deathImages.length - 1]];
             if (!this.world.gameOverShown) {
@@ -113,75 +131,93 @@ class Sharky extends MovableObjects {
         }
         return;
       }
-      this.isSleeping = (now - this.lastActionTime > 15000 && !this.isDead);
+      this.isSleeping = now - this.lastActionTime > 15000 && !this.isDead;
       if (this.isHurt()) {
+        this.interruptSleep();
         const hurtImages = this.lastHurtBy instanceof Jellyfish ? this.IMAGES_HURT_ELECTRIC : this.IMAGES_HURT_POISON;
         this.playAnimation(hurtImages);
+        this.sleeping = false;
         return;
       }
       if (this.world.keyboard.SPACE) {
         this.handleAttackAnimation();
-      } else if (this.isSleeping) {
+      } else if (this.isSleeping && !this.isDead && !this.isHurt()) {
         if (!this.fallingAsleepStarted) {
           this.fallingAsleepStarted = true;
-          this.playAnimationOnce(this.IMAGES_FALLING_A_SLEEP, () => {
-            this.playPingPongAnimation(this.IMAGES_SLEEP);
-            this.playLoopedSound("sleep", this.AUDIO_SLEEP);
-          });
+          this.sleeping = true;
+          if (this.sleeping) {
+            this.playAnimationOnce(this.IMAGES_FALLING_A_SLEEP, () => {
+              this.playPingPongAnimation(this.IMAGES_SLEEP);
+              this.playLoopedSound("sleep", this.AUDIO_SLEEP);
+            });
+          }
         }
       } else if (this.isIdle()) {
+        this.interruptSleep();
         this.handleIdle();
       } else {
+        this.interruptSleep();
         this.handleSwim();
       }
     }, 200);
   }
 
-  handleAttackAnimation() {
+handleAttackAnimation() {
     const now = Date.now();
-    if (now - this.lastAttackTime < this.attackCooldown) return;
+    if (now - this.lastAttackTime < this.attackCooldown || this.isAttackingAnimation) return;
     this.lastAttackTime = now;
+    this.isAttackingAnimation = true;
 
     let attackTriggered = false;
+
     this.world.level.enemies.forEach((enemy) => {
-      if (this.startFinAttack(enemy)) {
-        this.playAnimation(this.IMAGES_ATTACK_FIN);
-        if (now - this.lastFinSlapTime > this.finSlapCooldown) {
-          this.playSound(this.AUDIO_FIN_SLAP);
-          this.lastFinSlapTime = now;
+        if (this.startFinAttack(enemy)) {
+            this.playAnimationOnce(this.IMAGES_ATTACK_FIN, () => {
+                this.isAttackingAnimation = false;
+            });
+            if (now - this.lastFinSlapTime > this.finSlapCooldown) {
+                this.playSound(this.AUDIO_FIN_SLAP);
+                this.lastFinSlapTime = now;
+            }
+            if (this.isColliding(enemy)) {
+                setTimeout(() => enemy.reactToHit(), 200);
+            }
+            attackTriggered = true;
+        } else if (this.startBubbleAttack(enemy)) {
+            this.playAnimationOnce(this.IMAGES_ATTACK_BUBBLE, () => {
+                this.isAttackingAnimation = false;
+            });
+            this.playLoopedSound("bubble", this.AUDIO_BUBBLE);
+            if (this.isColliding(enemy)) enemy.reactToHit();
+            attackTriggered = true;
         }
-        if (this.isColliding(enemy)) {
-          setTimeout(() => enemy.reactToHit(), 200);
-        }
-        attackTriggered = true;
-      } else if (this.startBubbleAttack(enemy)) {
-        this.playAnimation(this.IMAGES_ATTACK_BUBBLE);
-        this.playLoopedSound("bubble", this.AUDIO_BUBBLE);
-        if (this.isColliding(enemy)) enemy.reactToHit();
-        attackTriggered = true;
-      }
     });
 
     const boss = this.world.boss;
     if (this.startPoisonAttack(boss)) {
-      if (this.world.poison > 0) {
-        this.playAnimation(this.IMAGES_ATTACK_BUBBLE_POISON);
-        this.playLoopedSound("bubble", this.AUDIO_BUBBLE);
-        if (this.isColliding(boss)) {
-          boss.reactToHit();
-          this.world.poison--;
-          this.world.statusBarPoison.storePoison(this.world.poison);
+        if (this.world.poison > 0) {
+            this.playAnimationOnce(this.IMAGES_ATTACK_BUBBLE_POISON, () => {
+                this.isAttackingAnimation = false;
+            });
+            this.playLoopedSound("bubble", this.AUDIO_BUBBLE);
+            if (this.isColliding(boss)) {
+                boss.reactToHit();
+                this.world.poison--;
+                this.world.statusBarPoison.storePoison(this.world.poison);
+            }
+            attackTriggered = true;
+        } else {
+            this.playSound(this.AUDIO_NO_POISON);
+            this.isAttackingAnimation = false;
         }
-        attackTriggered = true;
-      } else {
-        this.playSound(this.AUDIO_NO_POISON);
-      }
     }
 
     if (!attackTriggered) {
-      this.stopSound("bubble", this.AUDIO_BUBBLE);
+        this.stopSound("bubble", this.AUDIO_BUBBLE);
+        this.isAttackingAnimation = false;
     }
-  }
+}
+
 
   startFinAttack(enemy) {
     return enemy instanceof Puffers && (this.isClose(enemy) || this.isColliding(enemy));
@@ -216,33 +252,21 @@ class Sharky extends MovableObjects {
     clearInterval(this.pingPongInterval);
   }
 
-  playSound(audio) {
-    if (!audio) return;
-    audio.pause();
-    audio.currentTime = 0;
-    audio.play().catch((e) => console.warn("🔇 Sound konnte nicht abgespielt werden:", e));
-  }
-
-  playLoopedSound(name, audio) {
-    if (!audio || this.audioStates[name]) return;
-    audio.loop = true;
-    audio.currentTime = 0;
-    audio.play().catch((e) => console.warn("🔁 Sound konnte nicht abgespielt werden:", e));
-    this.audioStates[name] = true;
-  }
-
-  stopSound(name, audio) {
-    if (!audio || !this.audioStates[name]) return;
-    audio.pause();
-    audio.currentTime = 0;
-    audio.loop = false;
-    this.audioStates[name] = false;
-  }
 
   setAudioVolumes() {
     this.AUDIO_BUBBLE.volume = 0.1;
     this.AUDIO_FIN_SLAP.volume = 0.5;
     this.AUDIO_SLEEP.volume = 0.2;
     this.AUDIO_NO_POISON.volume = 1;
+  }
+
+  interruptSleep() {
+    if (this.sleeping) {
+      this.sleeping = false;
+      this.fallingAsleepStarted = false;
+      clearInterval(this.pingPongInterval);
+      this.stopSound("sleep", this.AUDIO_SLEEP);
+      this.resetSleep();
+    }
   }
 }

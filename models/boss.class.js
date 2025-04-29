@@ -22,10 +22,12 @@ class Boss extends MovableObjects {
   IMAGES_HURT = ["img/2.Enemy/3 Final Enemy/Hurt/1.png", "img/2.Enemy/3 Final Enemy/Hurt/2.png", "img/2.Enemy/3 Final Enemy/Hurt/3.png", "img/2.Enemy/3 Final Enemy/Hurt/4.png"];
   IMAGES_DEAD = ["img/2.Enemy/3 Final Enemy/Dead/2.png", "img/2.Enemy/3 Final Enemy/Dead/6.png", "img/2.Enemy/3 Final Enemy/Dead/7.png", "img/2.Enemy/3 Final Enemy/Dead/8.png", "img/2.Enemy/3 Final Enemy/Dead/9.png", "img/2.Enemy/3 Final Enemy/Dead/10.png"];
 
+  AUDIO_ATTACK = new Audio("audio/wale_attack.mp3");
+
   constructor(world) {
     super();
     this.world = world;
-
+    this.audioStates = {};
     this.loadImages(this.IMAGES_INTRO);
     this.loadImages(this.IMAGES_HOVER);
     this.loadImages(this.IMAGES_TRANSITION);
@@ -48,10 +50,11 @@ class Boss extends MovableObjects {
 
           this.playAnimationOnce(this.IMAGES_DEAD, () => {
             this.img = this.imageCache[this.IMAGES_DEAD[this.IMAGES_DEAD.length - 1]];
+            this.stopSound("attack", this.AUDIO_ATTACK);
           });
         } else {
           this.img = this.imageCache[this.IMAGES_DEAD[this.IMAGES_DEAD.length - 1]];
-          if (this.y < 400) this.y += 4; 
+          if (this.y < 400) this.y += 4;
         }
         return;
       } else if (this.isHurt() && this.world.coins >= 5) {
@@ -60,19 +63,23 @@ class Boss extends MovableObjects {
           this.playAnimationOnce(this.IMAGES_HURT, () => {
             this.hurtAnimationPlaying = false;
             this.playAnimation(this.IMAGES_HOVER);
+            this.stopSound("attack", this.AUDIO_ATTACK);
           });
         }
         return;
-      } else if ((this.isInProximity() || this.returning) && this.world.coins >= 5) {
+      } else if ((this.isInProximity() || this.returning) && this.world.coins >= 2) {
         this.movingAttack();
         this.playAnimation(this.IMAGES_ATTACKING);
+        this.playLoopedSound("attack", this.AUDIO_ATTACK);
         return;
-      } else if (this.world.character && this.world.character.x >= 1000 && this.world.coins >= 5) {
+      } else if (this.world.character && this.world.character.x >= 1000 && this.world.coins >= 2) {
         if (i < this.IMAGES_INTRO.length) {
           this.playAnimation(this.IMAGES_INTRO);
           i++;
+          this.stopSound("attack", this.AUDIO_ATTACK);
         } else {
           this.playAnimation(this.IMAGES_HOVER);
+          this.stopSound("attack", this.AUDIO_ATTACK);
         }
       }
     }, 200);
@@ -102,7 +109,7 @@ class Boss extends MovableObjects {
   reactToHit() {
     const now = Date.now();
 
-    if (this.dead) return;
+    if (this.energy <= 0 || this.isDead) return;
     if (now - this.lastHit < 1000) return;
 
     this.lastHit = now;

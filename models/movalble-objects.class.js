@@ -120,7 +120,7 @@ class MovableObjects extends DrawableObject {
 
   hit() {
     let now = new Date().getTime();
-    if (this.energy <= 0) return false;
+    if (this.isDead || this.energy <= 0) return false;
     if (this.isAttacking) return;
     if (this.world.keyboard.SPACE) return;
     if ((!this.lastHit || now - this.lastHit >= 3000) && !this.specialAttackPlayed) {
@@ -179,5 +179,28 @@ class MovableObjects extends DrawableObject {
 
   isDead() {
     return this.energy == 0;
+  }
+
+  playSound(audio) {
+    if (!audio) return;
+    audio.pause();
+    audio.currentTime = 0;
+    audio.play().catch((e) => console.warn("🔇 Sound konnte nicht abgespielt werden:", e));
+  }
+
+  stopSound(name, audio) {
+    if (!audio || !this.audioStates[name]) return;
+    audio.pause();
+    audio.currentTime = 0;
+    audio.loop = false;
+    this.audioStates[name] = false;
+  }
+
+  playLoopedSound(name, audio) {
+    if (!audio || this.audioStates[name]) return;
+    audio.loop = true;
+    audio.currentTime = 0;
+    audio.play().catch((e) => console.warn("🔁 Sound konnte nicht abgespielt werden:", e));
+    this.audioStates[name] = true;
   }
 }

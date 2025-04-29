@@ -20,7 +20,7 @@ class World {
   IMAGES_WIN_ANIMATION = ["img/6.Botones/Tittles/You win/Recurso 19.png", "img/6.Botones/Tittles/You win/Recurso 20.png", "img/6.Botones/Tittles/You win/Recurso 21.png", "img/6.Botones/Tittles/You win/Recurso 22.png"];
   IMAGES_START_INSTRUCTION = ["img/6.Botones/Instructions 2.png"];
   IMAGES_START_BUTTON = ["img/6.Botones/Start/1.png", "img/6.Botones/Start/2.png", "img/6.Botones/Start/3.png", "img/6.Botones/Start/4.png"];
-
+  
   /**
    * Creates an instance of the World class.
    * Initializes the canvas rendering context, keyboard input, and sets up the world.
@@ -63,7 +63,11 @@ class World {
   }
 
   checkEnemyCollisions() {
-    const allEnemies = [...this.level.enemies, this.boss];
+    const allEnemies = [...this.level.enemies];
+
+    if (this.coins >= 2) {
+      allEnemies.push(this.boss);
+    }
 
     allEnemies.forEach((enemy) => {
       if (this.character.isColliding(enemy)) {

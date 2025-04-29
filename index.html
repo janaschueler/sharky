@@ -9,20 +9,32 @@
     <title>Sharky | 2D Game</title>
   </head>
 
- <body onload="init()">
-  <h1>Sharky</h1>
+  <body onload="init()">
+    <h1>Sharky</h1>
 
-  <div class="game-container">
-    <canvas id="canvas" width="720" height="480"></canvas>
+    <div class="game-container">
+      <canvas id="canvas" width="720" height="480"></canvas>
+      <div class="navigation">
+        <button id="instructionsButton" onclick="openInstruction()">i</button>
+        <button id="sound-btn" >
+          <img src="img/icon/volume-high-solid.svg" alt="sound icon" />
+        </button>
+      </div>
 
-    <div id="start-screen">
-      <img id="start-background" src="img/6.Botones/Start/start.png" />
-      <img id="start-btn" src="img/6.Botones/Start/1.png" />
-      <img id="instructions" src="img/6.Botones/Instructions 2.png" />
+      <div id="instructionsOverlay" class="d_none opacity">
+        <button id="close-btn" onclick="closeInstruction()">
+          <img src="img/icon/xmark-solid.svg" alt="close" />
+        </button>
+        <img class="instructions" src="img/6.Botones/Instructions 2.png" alt="Instructions" />
+        <div class="instructionGuide">Collect at least 2 coins and 3 poison vials to challenge the Boss!</div>
+      </div>
+
+      <div id="start-screen">
+        <img id="start-background" src="img/6.Botones/Start/start.png" />
+        <img id="start-btn" src="img/6.Botones/Start/1.png" />
+      </div>
     </div>
-  </div>
-</body>
-
+  </body>
 
   <!-- Basis-Klassen zuerst -->
   <script src="./models/drawable-object.class.js"></script>
