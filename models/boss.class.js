@@ -14,6 +14,7 @@ class Boss extends MovableObjects {
   speed = 2;
   returning = false;
   hurtAnimationPlaying = false;
+  isDead = false;
 
   IMAGES_INTRO = ["img/2.Enemy/3 Final Enemy/1.Introduce/1.png", "img/2.Enemy/3 Final Enemy/1.Introduce/2.png", "img/2.Enemy/3 Final Enemy/1.Introduce/3.png", "img/2.Enemy/3 Final Enemy/1.Introduce/4.png", "img/2.Enemy/3 Final Enemy/1.Introduce/5.png", "img/2.Enemy/3 Final Enemy/1.Introduce/6.png", "img/2.Enemy/3 Final Enemy/1.Introduce/7.png", "img/2.Enemy/3 Final Enemy/1.Introduce/8.png", "img/2.Enemy/3 Final Enemy/1.Introduce/9.png", "img/2.Enemy/3 Final Enemy/1.Introduce/10.png"];
   IMAGES_HOVER = ["img/2.Enemy/3 Final Enemy/2.floating/1.png", "img/2.Enemy/3 Final Enemy/2.floating/2.png", "img/2.Enemy/3 Final Enemy/2.floating/3.png", "img/2.Enemy/3 Final Enemy/2.floating/4.png", "img/2.Enemy/3 Final Enemy/2.floating/5.png", "img/2.Enemy/3 Final Enemy/2.floating/6.png", "img/2.Enemy/3 Final Enemy/2.floating/7.png", "img/2.Enemy/3 Final Enemy/2.floating/8.png", "img/2.Enemy/3 Final Enemy/2.floating/9.png", "img/2.Enemy/3 Final Enemy/2.floating/10.png", "img/2.Enemy/3 Final Enemy/2.floating/11.png", "img/2.Enemy/3 Final Enemy/2.floating/12.png", "img/2.Enemy/3 Final Enemy/2.floating/13.png"];
@@ -45,6 +46,7 @@ class Boss extends MovableObjects {
     let i = 0;
     setInterval(() => {
       if (this.energy <= 0) {
+        this.isDead = true;
         if (!this.deadAnimationPlayed) {
           this.deadAnimationPlayed = true;
 
@@ -57,7 +59,7 @@ class Boss extends MovableObjects {
           if (this.y < 400) this.y += 4;
         }
         return;
-      } else if (this.isHurt() && this.world.coins >= 5) {
+      } else if (this.isHurt() && this.world.coins >= 2) {
         if (!this.hurtAnimationPlaying) {
           this.hurtAnimationPlaying = true;
           this.playAnimationOnce(this.IMAGES_HURT, () => {
@@ -67,8 +69,12 @@ class Boss extends MovableObjects {
           });
         }
         return;
-      } else if ((this.isInProximity() || this.returning) && this.world.coins >= 2) {
+      } else if ((this.isInProximity() || this.returning) && this.world.coins >= 2 && !this.isColliding(this.world.character)) {
         this.movingAttack();
+        this.playAnimation(this.IMAGES_ATTACKING);
+        this.playLoopedSound("attack", this.AUDIO_ATTACK);
+        return;
+      } else if (this.isColliding(this.world.character) && this.world.coins >= 2) {
         this.playAnimation(this.IMAGES_ATTACKING);
         this.playLoopedSound("attack", this.AUDIO_ATTACK);
         return;
@@ -109,15 +115,14 @@ class Boss extends MovableObjects {
   reactToHit() {
     const now = Date.now();
 
-    if (this.energy <= 0 || this.isDead) return;
+    if (this.isDead) return;
     if (now - this.lastHit < 1000) return;
 
     this.lastHit = now;
     this.energy -= 20;
-    console.log("🔥 Boss hit! Energy left:", this.energy);
 
     if (this.energy <= 0) {
-      this.dead = true;
+      this.isDead = true;
       this.currentImage = 0;
     }
   }

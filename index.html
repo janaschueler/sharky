@@ -9,16 +9,33 @@
     <title>Sharky | 2D Game</title>
   </head>
 
-  <body onload="init()">
+  <body>
     <h1>Sharky</h1>
 
-    <div class="game-container">
-      <canvas id="canvas" width="720" height="480"></canvas>
+    <div id="rotate-device-overlay">
+      <p>Bitte drehe dein Gerät ins Querformat</p>
+    </div>
+
+    <div class="game-container" id="fullscreen">
       <div class="navigation">
-        <button id="instructionsButton" onclick="openInstruction()">i</button>
-        <button id="sound-btn" >
+        <button class="joyStickUnit" id="instructionsButton" onclick="openInstruction()">i</button>
+        <button id="sound-btn">
           <img src="img/icon/volume-high-solid.svg" alt="sound icon" />
         </button>
+        <!-- <button id="fullscreen-btn" onclick="toggleFullscreen()">
+          <img id="fullscreen-icon" src="img/icon/maximize-solid.svg" alt="Fullscreen" />
+        </button> -->
+      </div>
+      <canvas id="canvas"></canvas>
+
+      <div class="mobileJoystick">
+        <div class="joyStickUnit">
+          <button id="moveLeftBtn"><img src="img/icon/arrow-left-solid.svg" alt="left button" /></button> <button id="moveRightBtn"><img src="img/icon/arrow-right-solid.svg" alt="left button" /></button>
+        </div>
+        <button id="attackBtn"><img src="img/icon/burst-solid.svg" alt="left button" /></button>
+        <div class="joyStickUnit">
+          <button id="moveUpBtn"><img src="img/icon/arrow-up-solid.svg" alt="left button" /></button> <button id="moveDownBtn"><img src="img/icon/arrow-down-solid.svg" alt="left button" /></button>
+        </div>
       </div>
 
       <div id="instructionsOverlay" class="d_none opacity">
@@ -31,7 +48,7 @@
 
       <div id="start-screen">
         <img id="start-background" src="img/6.Botones/Start/start.png" />
-        <img id="start-btn" src="img/6.Botones/Start/1.png" />
+        <img onclick="init()" id="start-btn" src="img/6.Botones/Start/1.png" />
       </div>
     </div>
   </body>

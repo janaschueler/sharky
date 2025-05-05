@@ -258,7 +258,7 @@ class World {
     const gameOverImg = document.createElement("img");
     gameOverImg.style = `
       position: absolute;
-      top: 20%;
+      top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
       width: 400px;
@@ -276,7 +276,7 @@ class World {
     tryAgainBtn.src = this.IMAGES_TRAY_AGAIN[0];
     tryAgainBtn.style = `
       position: absolute;
-      top: 40%;
+      top: 60%;
       left: 50%;
       transform: translate(-50%, -50%);
       width: 200px;
@@ -296,7 +296,7 @@ class World {
     const winImg = document.createElement("img");
     winImg.style = `
       position: absolute;
-      top: 20%;
+      top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
       width: 400px;
@@ -314,7 +314,7 @@ class World {
     tryAgainBtn.src = this.IMAGES_TRAY_AGAIN[0];
     tryAgainBtn.style = `
       position: absolute;
-      top: 40%;
+      top: 60%;
       left: 50%;
       transform: translate(-50%, -50%);
       width: 200px;

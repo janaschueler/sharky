@@ -89,13 +89,13 @@ class Sharky extends MovableObjects {
         this.swimUp = true;
         this.swimDown = false;
       }
-      if (k.DOWN && this.otherDirection === false && this.x > -1300 && this.x < this.world.level.level_end_x && this.y < 400) {
+      if (k.DOWN && this.otherDirection === false && this.x > -1300 && this.x < this.world.level.level_end_x && this.y < 300) {
         this.x += this.speed / 3;
         this.y += this.speed / 1.2;
         this.swimDown = true;
         this.swimUp = false;
       }
-      if (k.DOWN && this.otherDirection === true && this.x > -1300 && this.x < 2000 && this.y < 400) {
+      if (k.DOWN && this.otherDirection === true && this.x > -1300 && this.x < 2000 && this.y < 300) {
         this.x -= this.speed / 3;
         this.y += this.speed / 1.2;
         this.swimDown = true;
@@ -127,7 +127,7 @@ class Sharky extends MovableObjects {
           });
         } else {
           this.img = this.imageCache[deathImages[deathImages.length - 1]];
-          if (this.y < 400) this.y += 5;
+          if (this.y < 280) this.y += 5;
         }
         return;
       }
@@ -162,7 +162,7 @@ class Sharky extends MovableObjects {
     }, 200);
   }
 
-handleAttackAnimation() {
+  handleAttackAnimation() {
     const now = Date.now();
     if (now - this.lastAttackTime < this.attackCooldown || this.isAttackingAnimation) return;
     this.lastAttackTime = now;
@@ -171,53 +171,52 @@ handleAttackAnimation() {
     let attackTriggered = false;
 
     this.world.level.enemies.forEach((enemy) => {
-        if (this.startFinAttack(enemy)) {
-            this.playAnimationOnce(this.IMAGES_ATTACK_FIN, () => {
-                this.isAttackingAnimation = false;
-            });
-            if (now - this.lastFinSlapTime > this.finSlapCooldown) {
-                this.playSound(this.AUDIO_FIN_SLAP);
-                this.lastFinSlapTime = now;
-            }
-            if (this.isColliding(enemy)) {
-                setTimeout(() => enemy.reactToHit(), 200);
-            }
-            attackTriggered = true;
-        } else if (this.startBubbleAttack(enemy)) {
-            this.playAnimationOnce(this.IMAGES_ATTACK_BUBBLE, () => {
-                this.isAttackingAnimation = false;
-            });
-            this.playLoopedSound("bubble", this.AUDIO_BUBBLE);
-            if (this.isColliding(enemy)) enemy.reactToHit();
-            attackTriggered = true;
+      if (this.startFinAttack(enemy)) {
+        this.playAnimationOnce(this.IMAGES_ATTACK_FIN, () => {
+          this.isAttackingAnimation = false;
+        });
+        if (now - this.lastFinSlapTime > this.finSlapCooldown) {
+          this.playSound(this.AUDIO_FIN_SLAP);
+          this.lastFinSlapTime = now;
         }
+        if (this.isColliding(enemy)) {
+          setTimeout(() => enemy.reactToHit(), 200);
+        }
+        attackTriggered = true;
+      } else if (this.startBubbleAttack(enemy)) {
+        this.playAnimationOnce(this.IMAGES_ATTACK_BUBBLE, () => {
+          this.isAttackingAnimation = false;
+        });
+        this.playLoopedSound("bubble", this.AUDIO_BUBBLE);
+        if (this.isColliding(enemy)) enemy.reactToHit();
+        attackTriggered = true;
+      }
     });
 
     const boss = this.world.boss;
     if (this.startPoisonAttack(boss)) {
-        if (this.world.poison > 0) {
-            this.playAnimationOnce(this.IMAGES_ATTACK_BUBBLE_POISON, () => {
-                this.isAttackingAnimation = false;
-            });
-            this.playLoopedSound("bubble", this.AUDIO_BUBBLE);
-            if (this.isColliding(boss)) {
-                boss.reactToHit();
-                this.world.poison--;
-                this.world.statusBarPoison.storePoison(this.world.poison);
-            }
-            attackTriggered = true;
-        } else {
-            this.playSound(this.AUDIO_NO_POISON);
-            this.isAttackingAnimation = false;
+      if (this.world.poison > 0) {
+        this.playAnimationOnce(this.IMAGES_ATTACK_BUBBLE_POISON, () => {
+          this.isAttackingAnimation = false;
+        });
+        this.playLoopedSound("bubble", this.AUDIO_BUBBLE);
+        if (this.isColliding(boss)) {
+          boss.reactToHit();
+          this.world.poison--;
+          this.world.statusBarPoison.storePoison(this.world.poison);
         }
+        attackTriggered = true;
+      } else {
+        this.playSound(this.AUDIO_NO_POISON);
+        this.isAttackingAnimation = false;
+      }
     }
 
     if (!attackTriggered) {
-        this.stopSound("bubble", this.AUDIO_BUBBLE);
-        this.isAttackingAnimation = false;
+      this.stopSound("bubble", this.AUDIO_BUBBLE);
+      this.isAttackingAnimation = false;
     }
-}
-
+  }
 
   startFinAttack(enemy) {
     return enemy instanceof Puffers && (this.isClose(enemy) || this.isColliding(enemy));
@@ -251,7 +250,6 @@ handleAttackAnimation() {
     this.fallingAsleepStarted = false;
     clearInterval(this.pingPongInterval);
   }
-
 
   setAudioVolumes() {
     this.AUDIO_BUBBLE.volume = 0.1;

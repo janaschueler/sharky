@@ -99,10 +99,10 @@ class MovableObjects extends DrawableObject {
   }
 
   bossIsClose(obj) {
-    const adjustedX = this.x + this.width - this.offset.right + 160;
-    const adjustedY = this.y + this.height - this.offset.bottom + 160;
-    const adjustedWidth = obj.x + obj.width - obj.offset.left + 160;
-    const adjustedHeight = obj.y + obj.height - obj.offset.top + 160;
+    const adjustedX = this.x + this.width - this.offset.right + 200;
+    const adjustedY = this.y + this.height - this.offset.bottom + 200;
+    const adjustedWidth = obj.x + obj.width - obj.offset.left + 200;
+    const adjustedHeight = obj.y + obj.height - obj.offset.top + 200;
     return adjustedX >= obj.x + obj.offset.left && this.x + this.offset.left <= adjustedWidth && adjustedY >= obj.y + obj.offset.top && this.y + this.offset.top <= adjustedHeight;
   }
 
