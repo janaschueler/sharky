@@ -1,3 +1,13 @@
+/**
+ * Represents a collectible coin in the game world.
+ * Inherits from MovableObjects and includes animation and audio behavior when collected.
+ *
+ * Features:
+ * - Displays a floating animation using a series of images
+ * - Plays a sound effect when collected
+ * - Spawns at a random position within a defined area
+ */
+
 class Coin extends MovableObjects {
   width = 40;
   height = 40;

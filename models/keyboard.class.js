@@ -1,3 +1,16 @@
+/**
+ * Handles keyboard input state for player controls.
+ * Tracks directional keys and spacebar status as boolean flags.
+ * Used to control character movement and actions within the game loop.
+ *
+ * Keys tracked:
+ * - ArrowLeft → `LEFT`
+ * - ArrowRight → `RIGHT`
+ * - ArrowDown → `DOWN`
+ * - ArrowUp → `UP`
+ * - Space → `SPACE`
+ */
+
 class Keyboard {
   LEFT = false;
   RIGHT = false;

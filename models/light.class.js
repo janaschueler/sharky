@@ -1,3 +1,12 @@
+/**
+ * Represents a moving light overlay in the background layer of the game.
+ * Inherits from MovableObjects and scrolls horizontally to create visual depth.
+ *
+ * Features:
+ * - Loads a static light image
+ * - Moves continuously from right to left
+ * - Randomized initial horizontal position for variety
+ */
 class Light extends MovableObjects {
   y = 0;
   width = 1140;
