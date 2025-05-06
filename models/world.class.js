@@ -20,7 +20,8 @@ class World {
   IMAGES_WIN_ANIMATION = ["img/6.Botones/Tittles/You win/Recurso 19.png", "img/6.Botones/Tittles/You win/Recurso 20.png", "img/6.Botones/Tittles/You win/Recurso 21.png", "img/6.Botones/Tittles/You win/Recurso 22.png"];
   IMAGES_START_INSTRUCTION = ["img/6.Botones/Instructions 2.png"];
   IMAGES_START_BUTTON = ["img/6.Botones/Start/1.png", "img/6.Botones/Start/2.png", "img/6.Botones/Start/3.png", "img/6.Botones/Start/4.png"];
-  
+  lostMusic = new Audio("audio/lost.mp3"); // Hinzugefügt
+  winMusic = new Audio("audio/win.mp3"); // Hinzugefügt
   /**
    * Creates an instance of the World class.
    * Initializes the canvas rendering context, keyboard input, and sets up the world.
@@ -253,12 +254,13 @@ class World {
   triggerGameOverScreen() {
     if (this.endScreenShown) return;
     this.endScreenShown = true;
+    this.lostMusic.play();
 
     let frame = 0;
     const gameOverImg = document.createElement("img");
     gameOverImg.style = `
       position: absolute;
-      top: 50%;
+      top: 40%;
       left: 50%;
       transform: translate(-50%, -50%);
       width: 400px;
@@ -291,12 +293,12 @@ class World {
   triggerWinScreen() {
     if (this.endScreenShown) return;
     this.endScreenShown = true;
-
+    this.winMusic.play();
     let frame = 0;
     const winImg = document.createElement("img");
     winImg.style = `
       position: absolute;
-      top: 50%;
+      top: 40%;
       left: 50%;
       transform: translate(-50%, -50%);
       width: 400px;

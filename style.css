@@ -44,7 +44,6 @@ body {
   height: 100vh;
   max-width: 720px;
   max-height: 480px;
-  aspect-ratio: 3 / 2;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -52,17 +51,13 @@ body {
 }
 
 canvas {
-  position: relative; /* Damit es unterhalb der Navigation bleibt */
+  position: relative;
   width: 100%;
   height: 100%;
-  aspect-ratio: 3 / 2;
-  display: block;
-  max-width: 100%;
-  max-height: 100%;
-  z-index: 1; /* Sicherstellen, dass der Canvas hinter der Navigation bleibt */
+  object-fit: contain;
+  z-index: 1;
 }
 
-/* Zentrale Overlays */
 #start-screen,
 #instructionsOverlay {
   position: absolute;
@@ -78,31 +73,30 @@ canvas {
 
 #start-background {
   position: absolute;
-  top: 50%; /* Zentriert das Bild vertikal */
-  left: 50%; /* Zentriert das Bild horizontal */
-  transform: translate(-50%, -50%); /* Korrigiert die Position für exakte Zentrierung */
-  max-width: 760px; /* Maximale Breite des Hintergrunds */
-  max-height: 500px; /* Maximale Höhe des Hintergrunds */
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  max-width: 760px;
+  max-height: 500px;
   width: 100%;
-  height: 100%; /* Passt sich an die Breite des Containers an */
-
-  z-index: -1; /* Hinter dem Button platzieren */
+  height: 100%;
+  z-index: -1;
 }
 
-/* Start Button - Positioniert über dem Hintergrundbild */
 #start-btn,
 #instructions {
+  display: none;
   max-width: 220px;
   width: 30%;
   margin: 10px;
   cursor: pointer;
-  z-index: 2; /* Button vor dem Hintergrundbild */
+  z-index: 2;
 }
 
 .navigation {
-  position: absolute; /* Positioniert die Navigation relativ zum game-container */
-  top: 10px; /* Abstand zum oberen Rand des Containers */
-  right: 10px; /* Abstand zum rechten Rand des Containers */
+  position: absolute;
+  top: 10px;
+  right: 10px;
   display: flex;
   gap: 10px;
   z-index: 100;
@@ -136,7 +130,7 @@ canvas {
 .mobileJoystick {
   display: none;
   position: absolute;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   bottom: 0%;
   left: 50%;
@@ -203,6 +197,7 @@ canvas {
 .d_none {
   display: none;
 }
+
 .instructionGuide {
   color: white;
 }
@@ -221,40 +216,41 @@ canvas {
   padding: 20px;
 }
 
-#fullscreen {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-image: url("./img/6.Botones/Start/ocean_Background.jpg");
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-}
-
-
-@media only screen and (max-height: 480px) {
+@media only screen and (max-width: 1024px) {
   .mobileJoystick {
     display: flex;
+  }
+}
+
+@media only screen and (max-height: 480px) {
+  canvas {
+    height: 100%;
+  }
+  .navigation {
+    right: 60px;
+  }
+}
+
+@media only screen and (max-height: 390px) {
+  .navigation {
+    right: 90px;
+  }
+}
+
+@media only screen and (max-height: 350px) {
+  .navigation {
+    right: 110px;
   }
 }
 
 @media only screen and (max-width: 720px) {
-  .mobileJoystick {
-    display: flex;
-  }
   canvas {
     width: 100%;
   }
-  /* .game-container {
+
+  .game-container {
     width: 100% !important;
-    height: 100% !important;
-  } */
+  }
 }
 
 @media only screen and (max-height: 600px) {
@@ -262,8 +258,7 @@ canvas {
     display: none;
   }
 
-  /* .game-container {
-    width: 100% !important;
+  .game-container {
     height: 100% !important;
-  } */
+  }
 }
