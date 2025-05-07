@@ -38,6 +38,13 @@ class Sharky extends MovableObjects {
   AUDIO_BUBBLE = new Audio("audio/blow-Attack.mp3");
   AUDIO_SLEEP = new Audio("audio/sleep.mp3");
 
+  /**
+   * Creates an instance of the Sharky class.
+   * Initializes the world, loads various image sets for animations, 
+   * sets audio volumes, and starts the animation process.
+   *
+   * @param {Object} world - The game world object that the Sharky instance interacts with.
+   */
   constructor(world) {
     super();
     this.world = world;
@@ -53,9 +60,7 @@ class Sharky extends MovableObjects {
     this.loadImages(this.IMAGES_HURT_ELECTRIC);
     this.loadImages(this.IMAGES_DEAD);
     this.loadImages(this.IMAGES_DEAD_ELECTROSHOCK);
-
     this.setAudioVolumes();
-
     this.animate();
   }
 
@@ -218,39 +223,90 @@ class Sharky extends MovableObjects {
     }
   }
 
+  /**
+   * Initiates a fin attack on the specified enemy.
+   * The attack is triggered if the enemy is an instance of the Puffers class
+   * and is either close to this object or colliding with it.
+   *
+   * @param {Object} enemy - The enemy object to attack.
+   * @returns {boolean} - Returns true if the attack is initiated, otherwise false.
+   */
   startFinAttack(enemy) {
     return enemy instanceof Puffers && (this.isClose(enemy) || this.isColliding(enemy));
   }
 
+  /**
+   * Initiates a bubble attack on the specified enemy.
+   * The attack is triggered if the enemy is an instance of Jellyfish
+   * and is either close to or colliding with the current object.
+   *
+   * @param {Object} enemy - The enemy object to attack.
+   * @returns {boolean} - Returns true if the bubble attack is initiated, otherwise false.
+   */
   startBubbleAttack(enemy) {
     return enemy instanceof Jellyfish && (this.isClose(enemy) || this.isColliding(enemy));
   }
 
+  /**
+   * Initiates a poison attack on the specified enemy if the conditions are met.
+   * The attack is triggered only if the enemy is an instance of the Boss class
+   * and is either close to or colliding with the attacker.
+   *
+   * @param {Object} enemy - The enemy object to target for the poison attack.
+   * @returns {boolean} - Returns true if the poison attack can be initiated, otherwise false.
+   */
   startPoisonAttack(enemy) {
     return enemy instanceof Boss && (this.isClose(enemy) || this.isColliding(enemy));
   }
 
+  /**
+   * Checks if the object is idle by verifying that no directional keys are being pressed.
+   * 
+   * @returns {boolean} Returns `true` if none of the directional keys (LEFT, RIGHT, UP, DOWN) are pressed, otherwise `false`.
+   */
   isIdle() {
     const k = this.world.keyboard;
     return !k.LEFT && !k.RIGHT && !k.UP && !k.DOWN;
   }
 
+  /**
+   * Handles the idle state of the sharky object.
+   * Plays the hover animation and resets swimming directions.
+   * 
+   * @method handleIdle
+   */
   handleIdle() {
     this.playAnimation(this.IMAGES_HOVER);
     this.swimUp = false;
     this.swimDown = false;
   }
 
+  /**
+   * Handles the swimming animation for the sharky object.
+   * This method triggers the playAnimation function with the swimming images.
+   */
   handleSwim() {
     this.playAnimation(this.IMAGES_SWIM);
   }
 
+  /**
+   * Resets the sleep state of the object.
+   * - Updates the last action time to the current timestamp.
+   * - Stops the falling asleep process.
+   * - Clears the interval associated with the ping-pong mechanism.
+   */
   resetSleep() {
     this.lastActionTime = Date.now();
     this.fallingAsleepStarted = false;
     clearInterval(this.pingPongInterval);
   }
 
+  /**
+   * Sets the volume levels for various audio elements associated with the sharky object.
+   * Adjusts the volume for bubble sounds, fin slap sounds, sleep sounds, and no poison sounds.
+   * 
+   * @method
+   */
   setAudioVolumes() {
     this.AUDIO_BUBBLE.volume = 0.1;
     this.AUDIO_FIN_SLAP.volume = 0.5;
@@ -258,6 +314,15 @@ class Sharky extends MovableObjects {
     this.AUDIO_NO_POISON.volume = 1;
   }
 
+  /**
+   * Interrupts the sleep state of the object.
+   * If the object is currently sleeping, this method will:
+   * - Set the `sleeping` state to `false`.
+   * - Reset the `fallingAsleepStarted` flag.
+   * - Clear the interval associated with the `pingPongInterval`.
+   * - Stop the "sleep" sound using the provided audio reference.
+   * - Reset the sleep-related properties of the object.
+   */
   interruptSleep() {
     if (this.sleeping) {
       this.sleeping = false;
