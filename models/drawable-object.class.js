@@ -7,7 +7,6 @@
  * - Manages a main image and an image cache for animations or states
  * - Includes position (x, y), dimensions (width, height), and optional vertical offset
  */
-
 class DrawableObject {
   img;
   imageCache = {}; // we use this object to store the images

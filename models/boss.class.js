@@ -39,6 +39,28 @@ class Boss extends MovableObjects {
   IMAGES_DEAD = ["img/2.Enemy/3 Final Enemy/Dead/2.png", "img/2.Enemy/3 Final Enemy/Dead/6.png", "img/2.Enemy/3 Final Enemy/Dead/7.png", "img/2.Enemy/3 Final Enemy/Dead/8.png", "img/2.Enemy/3 Final Enemy/Dead/9.png", "img/2.Enemy/3 Final Enemy/Dead/10.png"];
   AUDIO_ATTACK = new Audio("audio/wale_attack.mp3");
 
+  /**
+   * Creates an instance of the Boss class.
+   *
+   * @class
+   * @extends SomeParentClass
+   * @param {Object} world - The game world object that the boss interacts with.
+   *
+   * @property {Object} world - Reference to the game world.
+   * @property {Object} audioStates - Stores the audio states for the boss.
+   * @property {Object} imageCache - Cache for loaded images.
+   * @property {string[]} IMAGES_INTRO - Array of image paths for the intro animation.
+   * @property {string[]} IMAGES_HOVER - Array of image paths for the hover animation.
+   * @property {string[]} IMAGES_TRANSITION - Array of image paths for the transition animation.
+   * @property {string[]} IMAGES_ATTACKING - Array of image paths for the attacking animation.
+   * @property {string[]} IMAGES_HURT - Array of image paths for the hurt animation.
+   * @property {string[]} IMAGES_DEAD - Array of image paths for the dead animation.
+   * @property {string} img - The current image being displayed.
+   * @property {number} x - The x-coordinate position of the boss in the game world.
+   *
+   * @method loadImages - Loads an array of images into the image cache.
+   * @method loadImage - Loads a single image into the image cache.
+   */
   constructor(world) {
     super();
     this.world = world;
@@ -60,22 +82,28 @@ class Boss extends MovableObjects {
    */
   animate() {
     let introIndex = 0;
+    let reached1500 = false;
     setInterval(() => {
-      if (this.energy <= 0) {
-        this.handleDeath();
-      } else if (this.shouldReactToHit()) {
-        this.handleHurt();
-      } else if (this.shouldAttackWithoutCollision()) {
-        this.handleAttackMovement();
-      } else if (this.shouldAttackOnCollision()) {
-        this.handleAttackContact();
-      } else if (this.shouldPlayIntro(introIndex)) {
-        this.playAnimation(this.IMAGES_INTRO);
-        introIndex++;
-        this.stopSound("attack", this.AUDIO_ATTACK);
-      } else {
-        this.playAnimation(this.IMAGES_HOVER);
-        this.stopSound("attack", this.AUDIO_ATTACK);
+      if (this.world.character?.x >= 1500 && !reached1500) {
+        reached1500 = true;
+      }
+      if (this.world.coins >= 2 && reached1500) {
+        if (this.energy <= 0) {
+          this.handleDeath();
+        } else if (this.shouldReactToHit()) {
+          this.handleHurt();
+        } else if (this.shouldAttackWithoutCollision()) {
+          this.handleAttackMovement();
+        } else if (this.shouldAttackOnCollision()) {
+          this.handleAttackContact();
+        } else if (this.shouldPlayIntro(introIndex)) {
+          this.playAnimation(this.IMAGES_INTRO);
+          introIndex++;
+          this.stopSound("attack", this.AUDIO_ATTACK);
+        } else {
+          this.playAnimation(this.IMAGES_HOVER);
+          this.stopSound("attack", this.AUDIO_ATTACK);
+        }
       }
     }, 200);
   }
@@ -189,17 +217,17 @@ class Boss extends MovableObjects {
    * @returns {boolean} - Returns `true` if the intro should play, otherwise `false`.
    */
   shouldPlayIntro(i) {
-    return this.world.character?.x >= 1400 && i < this.IMAGES_INTRO.length && this.world.coins >= 2;
+    return this.world.character?.x >= 1500 && i < this.IMAGES_INTRO.length && this.world.coins >= 2;
   }
 
   /**
    * Handles the movement logic for an attack sequence.
    * The object moves forward at a speed proportional to its `speed` property,
    * and then returns back once a certain position is reached.
-   * 
+   *
    * - Moves forward until `this.x` is less than or equal to 900, then switches to returning mode.
    * - Moves back until `this.x` is greater than or equal to 2100, then switches back to forward mode.
-   * 
+   *
    * Updates the `returning` and `otherDirection` flags to indicate the current movement state.
    */
   movingAttack() {
@@ -224,7 +252,7 @@ class Boss extends MovableObjects {
    * Handles the reaction of the boss character when it is hit.
    * Reduces the boss's energy by 20 if enough time has passed since the last hit.
    * If the energy drops to 0 or below, marks the boss as dead and resets the current image index.
-   * 
+   *
    * @returns {void} Does not return a value.
    */
   reactToHit() {

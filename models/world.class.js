@@ -1,7 +1,13 @@
+/**
+ * The `World` class represents the game world and manages the game state,
+ * including the character, enemies, collectables, background, and user interactions.
+ * It handles rendering, collision detection, proximity checks, and game state transitions
+ * such as win or game over screens.
+ */
+
 class World {
   character;
   level = level1;
-
   canvas;
   ctx; // canvas context
   keyboard;
@@ -20,8 +26,8 @@ class World {
   IMAGES_WIN_ANIMATION = ["img/6.Botones/Tittles/You win/Recurso 19.png", "img/6.Botones/Tittles/You win/Recurso 20.png", "img/6.Botones/Tittles/You win/Recurso 21.png", "img/6.Botones/Tittles/You win/Recurso 22.png"];
   IMAGES_START_INSTRUCTION = ["img/6.Botones/Instructions 2.png"];
   IMAGES_START_BUTTON = ["img/6.Botones/Start/1.png", "img/6.Botones/Start/2.png", "img/6.Botones/Start/3.png", "img/6.Botones/Start/4.png"];
-  lostMusic = new Audio("audio/lost.mp3"); // Hinzugefügt
-  winMusic = new Audio("audio/win.mp3"); // Hinzugefügt
+  lostMusic = new Audio("audio/lost.mp3");
+  winMusic = new Audio("audio/win.mp3");
   /**
    * Creates an instance of the World class.
    * Initializes the canvas rendering context, keyboard input, and sets up the world.
@@ -56,6 +62,14 @@ class World {
     this.character.world = this;
   }
 
+  /**
+   * Periodically checks for collisions in the game world.
+   * This method sets up an interval that repeatedly checks for two types of collisions:
+   * - Enemy collisions: Detects if the player has collided with any enemies.
+   * - Collectable collisions: Detects if the player has collected any items.
+   *
+   * The checks are performed every 200 milliseconds.
+   */
   checkCollisions() {
     setInterval(() => {
       this.checkEnemyCollisions();
@@ -63,13 +77,17 @@ class World {
     }, 200);
   }
 
+  /**
+   * Checks for collisions between the character and all enemies in the current level.
+   * If the character has collected at least 2 coins, the boss enemy is included in the collision check.
+   * When a collision is detected, the character takes damage, the enemy's hurt sound is played (if available),
+   * and the status bar is updated to reflect the character's remaining energy.
+   */
   checkEnemyCollisions() {
     const allEnemies = [...this.level.enemies];
-
     if (this.coins >= 2) {
       allEnemies.push(this.boss);
     }
-
     allEnemies.forEach((enemy) => {
       if (this.character.isColliding(enemy)) {
         this.character.lastHurtBy = enemy;
@@ -82,6 +100,10 @@ class World {
     });
   }
 
+  /**
+   * Checks for collisions between the character and collectable items in the level.
+   * If a collision is detected, it handles the collision by invoking the appropriate method.
+   */
   checkCollectableCollisions() {
     this.level.collectables.forEach((collectable, index) => {
       if (this.character.isColliding(collectable)) {
@@ -90,6 +112,15 @@ class World {
     });
   }
 
+  /**
+   * Handles the collision between the player and a collectable item.
+   * Depending on the type of collectable (Coin or Poison), it updates the player's
+   * inventory and status bar, plays a sound, and removes the collectable from the level.
+   *
+   * @param {Object} collectable - The collectable item that the player collides with.
+   * @param {number} index - The index of the collectable in the level's collectables array.
+   * @returns {void}
+   */
   handleCollectableCollision(collectable, index) {
     if (collectable instanceof Coin && this.coins < 6) {
       collectable.playSound();
@@ -105,6 +136,13 @@ class World {
     this.level.collectables.splice(index, 1);
   }
 
+  /**
+   * Periodically checks the proximity of all enemies (including the boss) to the character.
+   * If an enemy is close, it triggers the `closeBy` method on the enemy.
+   * If an enemy is far away, it triggers the `farAway` method on the enemy.
+   *
+   * The proximity check is performed every 200 milliseconds.
+   */
   checkProximity() {
     setInterval(() => {
       const allEnemies = [...this.level.enemies, this.boss];
@@ -115,7 +153,6 @@ class World {
         } else {
           isClose = this.character.isClose(enemy);
         }
-
         if (isClose) {
           enemy.closeBy();
         } else {
@@ -125,10 +162,16 @@ class World {
     }, 200);
   }
 
+  /**
+   * Periodically checks the state of enemies and the boss in the game.
+   * - Removes enemies marked for removal from the level's enemies array.
+   * - Triggers the win screen if the boss's energy is depleted and the win screen has not already been shown.
+   *
+   * This method runs every 200 milliseconds using `setInterval`.
+   */
   checkEnemyState() {
     setInterval(() => {
       this.level.enemies = this.level.enemies.filter((enemy) => !enemy.markedForRemoval);
-
       if (this.boss.energy <= 0 && !this.winScreenShown) {
         this.winScreenShown = true;
         this.triggerWinScreen();
@@ -146,17 +189,14 @@ class World {
    * @method
    */
   draw() {
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height); // clear the canvas, clearRect is a method of the canvas context
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.ctx.translate(this.camera_x, 0);
     this.addObjectsToMap(this.level.backgroundObject);
-
     this.ctx.translate(-this.camera_x, 0);
-    // ----- Space for fixed objects ---
     this.addToMap(this.statusBar);
     this.addToMap(this.statusBarCoins);
     this.addToMap(this.statusBarPoison);
     this.ctx.translate(this.camera_x, 0);
-
     this.addObjectsToMap(this.level.light);
     this.addObjectsToMap(this.level.enemies);
     this.addObjectsToMap(this.level.collectables);
@@ -197,7 +237,6 @@ class World {
         this.flipImage(mo);
       }
       mo.draw(this.ctx);
-      // mo.drawFrame(this.ctx);
       if (mo.otherDirection) {
         this.flipImageBack(mo);
       }
@@ -228,18 +267,41 @@ class World {
     mo.x = mo.x * -1;
   }
 
+  /**
+   * Rotates and draws an image on the canvas context.
+   *
+   * @param {Object} mo - The image object to be rotated and drawn.
+   * @param {number} mo.x - The x-coordinate of the image's top-left corner.
+   * @param {number} mo.y - The y-coordinate of the image's top-left corner.
+   * @param {number} mo.width - The width of the image.
+   * @param {number} mo.height - The height of the image.
+   * @param {HTMLImageElement} mo.img - The image to be drawn.
+   * @param {number} angle - The angle of rotation in degrees.
+   */
   rotateImage(mo, angle) {
     this.ctx.translate(mo.x + mo.width / 2, mo.y + mo.height / 2);
     this.ctx.rotate((angle * Math.PI) / 180);
     this.ctx.drawImage(mo.img, -mo.width / 2, -mo.height / 2, mo.width, mo.height);
   }
 
+  /**
+   * Rotates and flips an image horizontally before drawing it on the canvas.
+   *
+   * @param {Object} mo - The object containing the image and its properties.
+   * @param {HTMLImageElement} mo.img - The image to be drawn.
+   * @param {number} mo.x - The x-coordinate of the image's position.
+   * @param {number} mo.y - The y-coordinate of the image's position.
+   * @param {number} mo.width - The width of the image.
+   * @param {number} mo.height - The height of the image.
+   * @param {number} angle - The angle in degrees to rotate the image.
+   */
   rotateImageFlipped(mo, angle) {
     this.ctx.translate(mo.x + mo.width / 2, mo.y + mo.height / 2);
     this.ctx.scale(-1, 1);
     this.ctx.rotate((angle * Math.PI) / 180);
     this.ctx.drawImage(mo.img, -mo.width / 2, -mo.height / 2, mo.width, mo.height);
   }
+
   /**
    * Flips the image of the given object horizontally by inverting its x-coordinate
    * and restores the canvas context to its previous state.
@@ -251,97 +313,122 @@ class World {
     mo.x = mo.x * -1;
   }
 
+  /**
+   * Triggers the game over screen sequence. This method ensures that the game over
+   * screen is only shown once by checking the `endScreenShown` flag. If the flag
+   * is not set, it plays the "lost" music, displays the game over animation, and
+   * shows the "Try Again" button.
+   *
+   * @method
+   * @returns {void}
+   */
   triggerGameOverScreen() {
     if (this.endScreenShown) return;
     this.endScreenShown = true;
     this.lostMusic.play();
+    this.showGameOverAnimation();
+    this.showTryAgainButton();
+  }
 
-    let frame = 0;
+  /**
+   * Displays a game over animation by creating an image element,
+   * adding it to the document body, and cycling through a series
+   * of images at a set interval to create an animation effect.
+   *
+   * @method
+   */
+  showGameOverAnimation() {
     const gameOverImg = document.createElement("img");
-    gameOverImg.style = `
-      position: absolute;
-      top: 40%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 400px;
-      z-index: 1000;
-    `;
+    gameOverImg.classList.add("game-over-image");
     document.body.appendChild(gameOverImg);
-
+    let frame = 0;
     setInterval(() => {
       gameOverImg.src = this.IMAGES_GAME_OVER[frame];
       frame++;
       if (frame >= this.IMAGES_GAME_OVER.length) frame = 0;
     }, 150);
+  }
 
+  /**
+   * Displays a "Try Again" button on the screen.
+   * The button is created as an image element, styled with a specific class,
+   * and appended to the document body. When clicked, the button reloads the page.
+   */
+  showTryAgainButton() {
     const tryAgainBtn = document.createElement("img");
     tryAgainBtn.src = this.IMAGES_TRAY_AGAIN[0];
-    tryAgainBtn.style = `
-      position: absolute;
-      top: 60%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 200px;
-      cursor: pointer;
-      z-index: 1001;
-    `;
+    tryAgainBtn.classList.add("try-again-button");
     document.body.appendChild(tryAgainBtn);
-
     tryAgainBtn.addEventListener("click", () => location.reload());
   }
 
+  /**
+   * Triggers the win screen sequence if it has not already been shown.
+   * This includes playing the win music, displaying the win animation,
+   * and showing the "Try Again" button.
+   *
+   * @returns {void}
+   */
   triggerWinScreen() {
     if (this.endScreenShown) return;
     this.endScreenShown = true;
     this.winMusic.play();
-    let frame = 0;
-    const winImg = document.createElement("img");
-    winImg.style = `
-      position: absolute;
-      top: 40%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 400px;
-      z-index: 1000;
-    `;
-    document.body.appendChild(winImg);
+    this.showWinAnimation();
+    this.showTryAgainButton();
+  }
 
+  /**
+   * Displays a win animation on the screen by creating an image element
+   * and cycling through a series of images at a fixed interval.
+   *
+   * The animation loops through the `IMAGES_WIN_ANIMATION` array, updating
+   * the `src` attribute of the image element to display each frame in sequence.
+   *
+   * @method
+   */
+  showWinAnimation() {
+    const winImg = document.createElement("img");
+    winImg.classList.add("win-screen-image");
+    document.body.appendChild(winImg);
+    let frame = 0;
     setInterval(() => {
       winImg.src = this.IMAGES_WIN_ANIMATION[frame];
       frame++;
       if (frame >= this.IMAGES_WIN_ANIMATION.length) frame = 0;
     }, 150);
+  }
 
+  /**
+   * Creates and displays a "Try Again" button on the screen.
+   * The button is styled with a CSS class for positioning and visuals.
+   * When clicked, the button triggers a page reload to restart the game.
+   */
+  showTryAgainButton() {
     const tryAgainBtn = document.createElement("img");
     tryAgainBtn.src = this.IMAGES_TRAY_AGAIN[0];
-    tryAgainBtn.style = `
-      position: absolute;
-      top: 60%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 200px;
-      cursor: pointer;
-      z-index: 1001;
-    `;
+    tryAgainBtn.classList.add("try-again-button");
     document.body.appendChild(tryAgainBtn);
-
     tryAgainBtn.addEventListener("click", () => location.reload());
   }
 
+  /**
+   * Initializes the background music for the game.
+   * - The music is set to loop continuously.
+   * - Volume is reduced to 20% for better game ambiance.
+   * - Playback starts on the first user interaction (click or keydown),
+   *   to comply with browser autoplay policies.
+   * - Event listeners are removed after the music starts to prevent multiple triggers.
+   */
   initBackgroundMusic() {
     this.backgroundMusic.loop = true;
     this.backgroundMusic.volume = 0.2;
-
     const playMusic = () => {
       this.backgroundMusic.play().catch((e) => {
-        console.warn("🎵 Hintergrundmusik konnte nicht gestartet werden:", e);
+        console.warn("🎵 Background music could not be started:", e);
       });
-      // Damit es nur 1x ausgeführt wird:
       window.removeEventListener("click", playMusic);
       window.removeEventListener("keydown", playMusic);
     };
-
-    // Nur nach Nutzer-Interaktion erlaubt (Browser-Sicherheitsrichtlinie)
     window.addEventListener("click", playMusic);
     window.addEventListener("keydown", playMusic);
   }

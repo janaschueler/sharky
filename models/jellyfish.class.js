@@ -12,7 +12,6 @@
 class Jellyfish extends MovableObjects {
   width = 80;
   height = this.width;
-
   offset = {
     top: 10,
     left: 20,
@@ -21,7 +20,6 @@ class Jellyfish extends MovableObjects {
   };
   dead = false;
   markedForRemoval = false;
-
   IMAGES_SWIM = ["img/2.Enemy/2 Jelly fish/Regular damage/Yellow 1.png", "img/2.Enemy/2 Jelly fish/Regular damage/Yellow 2.png", "img/2.Enemy/2 Jelly fish/Regular damage/Yellow 3.png", "img/2.Enemy/2 Jelly fish/Regular damage/Yellow 4.png"];
   IMAGES_TRANSITION = ["img/2.Enemy/2 Jelly fish/S｣per dangerous/Pink1.png", "img/2.Enemy/2 Jelly fish/S｣per dangerous/Pink2.png", "img/2.Enemy/2 Jelly fish/S｣per dangerous/Pink3.png", "img/2.Enemy/2 Jelly fish/S｣per dangerous/Pink4.png"];
   IMAGES_ATTACKING = ["img/2.Enemy/2 Jelly fish/S｣per dangerous/Pink1.png", "img/2.Enemy/2 Jelly fish/S｣per dangerous/Pink2.png", "img/2.Enemy/2 Jelly fish/S｣per dangerous/Pink3.png", "img/2.Enemy/2 Jelly fish/S｣per dangerous/Pink4.png"];

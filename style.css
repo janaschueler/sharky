@@ -111,6 +111,7 @@ canvas {
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
 }
 
 .navigation img {
@@ -215,6 +216,45 @@ canvas {
   z-index: 9999;
   padding: 20px;
 }
+
+.game-over-image {
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 400px;
+  z-index: 1000;
+}
+
+.try-again-button {
+  position: absolute;
+  top: 60%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 200px;
+  cursor: pointer;
+  z-index: 1001;
+}
+
+.win-screen-image {
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 400px;
+  z-index: 1000;
+}
+
+.try-again-button {
+  position: absolute;
+  top: 60%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 200px;
+  cursor: pointer;
+  z-index: 1001;
+}
+
 
 @media only screen and (max-width: 1024px) {
   .mobileJoystick {

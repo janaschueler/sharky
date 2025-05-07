@@ -24,7 +24,6 @@
         </button>
       </div>
       <canvas id="canvas" width="720" height="480"></canvas>
-
       <div class="mobileJoystick">
         <div class="joyStickUnit">
           <button id="moveLeftBtn">
@@ -46,7 +45,6 @@
           </button>
         </div>
       </div>
-
       <div id="instructionsOverlay" class="d_none opacity">
         <button id="close-btn" onclick="closeInstruction()">
           <img src="img/icon/xmark-solid.svg" alt="close" />
@@ -62,16 +60,11 @@
     </div>
   </body>
 
-  <!-- Basis-Klassen zuerst -->
   <script src="./models/drawable-object.class.js"></script>
   <script src="./models/movalble-objects.class.js"></script>
-
-  <!-- Statusbars und Objekte -->
   <script src="./models/status-bar-coins.class.js"></script>
   <script src="./models/status-bar-life.class.js"></script>
   <script src="./models/status-bar-poison.class.js"></script>
-
-  <!-- Gegner und Items -->
   <script src="./models/pufferfish.class.js"></script>
   <script src="./models/jellyfish.class.js"></script>
   <script src="./models/boss.class.js"></script>
@@ -80,16 +73,10 @@
   <script src="./models/poison.class.js"></script>
   <script src="./models/background-object.class.js"></script>
   <script src="./models/keyboard.class.js"></script>
-
-
-  <!-- Sharky erst hier (weil er von oben abhängig ist) -->
+  <script src="./models/sharkyAttack.class.js"></script>
   <script src="./models/sharky.class.js"></script>
-
-  <!-- Level und Welt -->
   <script src="./models/level.class.js"></script>
   <script src="./levels/level1.js"></script>
   <script src="./models/world.class.js"></script>
-
-  <!-- Spielstart -->
   <script src="./js/game.js"></script>
 </html>

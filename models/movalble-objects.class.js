@@ -9,6 +9,7 @@
  * - Flags for proximity, transition, and attack logic
  * - Randomized speed for natural variation in behavior
  */
+
 class MovableObjects extends DrawableObject {
   speed = 0.15 + Math.random() * 0.25;
   otherDirection = false;
@@ -88,7 +89,6 @@ class MovableObjects extends DrawableObject {
     if (this.moveInterval) clearInterval(this.moveInterval);
   }
 
-  
   /**
    * Moves the object to the left by decreasing its x-coordinate and adjusts the y-coordinate
    * based on the specified direction and the object's speed.
@@ -253,7 +253,17 @@ class MovableObjects extends DrawableObject {
     let now = new Date().getTime();
     if (this.isDead || this.energy <= 0) return false;
     if (this.isAttacking) return;
-    if (this.world.keyboard.SPACE) return;
+
+    if (this.world.keyboard.SPACE) {
+      if (this.isBoss && this.poisonAmount <= 0) {
+      }
+      if (this.isBoss && this.poisonAmount > 0) {
+        return; // Blockiert den Schaden
+      }
+      if (!this.isBoss) {
+        return;
+      }
+    }
     if ((!this.lastHit || now - this.lastHit >= 3000) && !this.specialAttackPlayed) {
       this.energy -= 20;
       if (this.energy < 0) {
