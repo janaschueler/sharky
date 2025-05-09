@@ -77,4 +77,6 @@ class DrawableObject {
       console.log("Image path:", this.img?.src);
     }
   }
+
+  
 }

@@ -22,6 +22,31 @@ class MovableObjects extends DrawableObject {
   isAttacking = false;
   isTransitioning = false;
   specialAttackPlayed = false;
+  speedY = 0;      // Startgeschwindigkeit nach oben
+  speedX = 2;         // Startgeschwindigkeit nach rechts
+  accelerationY =-0.02; // Die Blase soll langsamer nach oben steigen
+  accelerationX = 0;
+  isDead = false;
+
+  applyGravity() {
+    this.moveInterval = setInterval(() => {
+      // Position aktualisieren
+      this.y += this.speedY;
+      this.x += this.speedX;
+  
+      // Beschleunigung anwenden
+      this.speedY += this.accelerationY;
+      this.speedX += this.accelerationX;
+  
+      // Kontrolle: Wenn die X-Beschleunigung 0 erreicht, stoppt die X-Bewegung
+      if (this.accelerationX <= 0 && this.speedX <= 0) {
+        this.speedX = 0;
+        this.accelerationX = 0;
+      }
+  
+  
+    }, 1000 / 25);
+  }
 
   /**
    * Plays an animation by cycling through a given array of image paths.
@@ -80,6 +105,8 @@ class MovableObjects extends DrawableObject {
     this.startDirectionToggle(() => (direction *= -1));
   }
 
+  
+
   /**
    * Clears the existing movement interval if it is set.
    * This method stops any ongoing movement by clearing the interval
@@ -101,6 +128,11 @@ class MovableObjects extends DrawableObject {
     this.x -= this.speed;
     this.y += this.speed * direction;
   }
+
+
+
+
+  
 
   /**
    * Starts a loop that repeatedly calls the provided toggle function (`toggleFn`)

@@ -17,6 +17,7 @@ class Keyboard {
   DOWN = false;
   UP = false;
   SPACE = false;
+  D = false;
 
   pressKey(event) {
     switch (event) {
@@ -34,6 +35,9 @@ class Keyboard {
         break;
       case "Space":
         this.SPACE = true;
+        break;
+      case "KeyD":
+        this.D = true;
         break;
     }
   }
@@ -54,7 +58,10 @@ class Keyboard {
       case "Space":
         this.SPACE = false;
         break;
+      case "KeyD":
+        this.D = false;
+        break;
     }
   }
-  
+
 }

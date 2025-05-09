@@ -199,7 +199,7 @@ class Sharky extends MovableObjects {
         this.sleeping = false;
         return;
       }
-      if (this.world.keyboard.SPACE) {
+      if (this.world.keyboard.SPACE || this.world.keyboard.D) {
         this.attackHandler.handleAttackAnimation();
       }
       if (this.isSleeping && !this.isDead && !this.isHurt()) {

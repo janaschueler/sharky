@@ -50,7 +50,7 @@ class SharkyAttack {
       this.lastFinSlapTime = now;
     }
     if (this.sharky.isColliding(enemy)) {
-      setTimeout(() => enemy.reactToHit(), 200);
+      enemy.reactToHit()
     }
     return true;
   }
@@ -68,12 +68,24 @@ class SharkyAttack {
     this.sharky.playAnimationOnce(this.sharky.IMAGES_ATTACK_BUBBLE, () => {
       this.isAttackingAnimation = false;
     });
+    this.sharky.world.checkThrowableObjects();
     this.sharky.playLoopedSound("bubble", this.AUDIO_BUBBLE);
-    if (this.sharky.isColliding(enemy)) {
-      enemy.reactToHit();
-    }
+    this.sharky.world.throwableObjects.forEach((bubble, index) => {
+      if (bubble.isColliding(enemy)) {
+        if (typeof enemy.reactToHit === "function") {
+          enemy.reactToHit();
+        } 
+        bubble.clearExistingMovement();
+        const idx = this.sharky.world.throwableObjects.indexOf(bubble);
+        if (idx > -1) {
+          this.sharky.world.throwableObjects.splice(idx, 1);
+        }
+      } 
+    });
+  
     return true;
   }
+  
 
   /**
    * Handles the poison attack logic for the character.
@@ -128,28 +140,12 @@ class SharkyAttack {
     }
   }
 
-  /**
-   * Initiates a fin attack on the specified enemy.
-   * The attack is triggered if the enemy is an instance of the Puffers class
-   * and is either close to this object or colliding with it.
-   *
-   * @param {Object} enemy - The enemy object to attack.
-   * @returns {boolean} - Returns true if the attack is initiated, otherwise false.
-   */
-  startFinAttack(enemy) {
-    return enemy instanceof Puffers && (this.sharky.isClose(enemy) || this.sharky.isColliding(enemy));
+  startFinAttack() {
+    return this.sharky.world.keyboard.SPACE;
   }
 
-  /**
-   * Initiates a bubble attack on the specified enemy.
-   * The attack is triggered if the enemy is an instance of Jellyfish
-   * and is either close to or colliding with the current object.
-   *
-   * @param {Object} enemy - The enemy object to attack.
-   * @returns {boolean} - Returns true if the bubble attack is initiated, otherwise false.
-   */
-  startBubbleAttack(enemy) {
-    return enemy instanceof Jellyfish && (this.sharky.isClose(enemy) || this.sharky.isColliding(enemy));
+  startBubbleAttack() {
+    return this.sharky.world.keyboard.D;
   }
 
   /**
@@ -161,7 +157,8 @@ class SharkyAttack {
    * @returns {boolean} - Returns true if the poison attack can be initiated, otherwise false.
    */
   startPoisonAttack(enemy) {
-    return enemy instanceof Boss && (this.sharky.isClose(enemy) || this.sharky.isColliding(enemy));
+    return this.sharky.world.keyboard.D;
   }
 }
+
 window.SharkyAttack = SharkyAttack;

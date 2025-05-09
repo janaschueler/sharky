@@ -20,6 +20,7 @@ class World {
   statusBarCoins = new StatusBarCoins();
   statusBarPoison = new StatusBarPoison();
   backgroundMusic = new Audio("audio/wave_sounds.mp3");
+  throwableObjects = [];
   IMAGES_GAME_OVER = ["img/6.Botones/Tittles/Game Over/Recurso 9.png", "img/6.Botones/Tittles/Game Over/Recurso 10.png", "img/6.Botones/Tittles/Game Over/Recurso 11.png", "img/6.Botones/Tittles/Game Over/Recurso 12.png", "img/6.Botones/Tittles/Game Over/Recurso 13.png"];
   IMAGES_TRAY_AGAIN = ["img/6.Botones/Try again/Recurso 15.png", "img/6.Botones/Try again/Recurso 16.png", "img/6.Botones/Try again/Recurso 17.png", "img/6.Botones/Try again/Recurso 18.png"];
   IMAGES_WIN = ["img/6.Botones/Tittles/You win/Mesa de trabajo 1.png"];
@@ -28,6 +29,8 @@ class World {
   IMAGES_START_BUTTON = ["img/6.Botones/Start/1.png", "img/6.Botones/Start/2.png", "img/6.Botones/Start/3.png", "img/6.Botones/Start/4.png"];
   lostMusic = new Audio("audio/lost.mp3");
   winMusic = new Audio("audio/win.mp3");
+  bubbleCoolDown = false;
+
   /**
    * Creates an instance of the World class.
    * Initializes the canvas rendering context, keyboard input, and sets up the world.
@@ -39,14 +42,15 @@ class World {
   constructor(canvas, keyboard) {
     this.ctx = canvas.getContext("2d"); // with .getContext("2d") we get the 2d rendering context
     this.canvas = canvas;
-    this.keyboard = keyboard;
+    this.keyboard = keyboard || new Keyboard();
     this.character = new Sharky(this);
     this.boss = new Boss(this);
     this.boss.animate();
     this.setWorld();
     this.draw();
-    this.checkCollisions();
+    this.engage();
     this.checkProximity();
+    this.throwableObjects = [];
     this.checkEnemyState();
     this.initBackgroundMusic();
     this.gameOverLoader = new DrawableObject();
@@ -70,7 +74,7 @@ class World {
    *
    * The checks are performed every 200 milliseconds.
    */
-  checkCollisions() {
+  engage() {
     setInterval(() => {
       this.checkEnemyCollisions();
       this.checkCollectableCollisions();
@@ -110,6 +114,23 @@ class World {
         this.handleCollectableCollision(collectable, index);
       }
     });
+  }
+
+  checkThrowableObjects() {
+    if (this.keyboard.D && !this.bubbleCoolDown) {
+      this.bubbleCoolDown = true;
+      setTimeout(() => {
+        let bubble = new ThrowableObject(this.character.x, this.character.y, this);
+        this.throwableObjects.push(bubble);
+      }, 1650);
+    }
+    setTimeout(() => {
+      this.bubbleCoolDown = false;
+    }, 1000);
+
+    if (!this.keyboard.D) {
+      this.bubbleCoolDown = false;
+    }
   }
 
   /**
@@ -200,6 +221,7 @@ class World {
     this.addObjectsToMap(this.level.light);
     this.addObjectsToMap(this.level.enemies);
     this.addObjectsToMap(this.level.collectables);
+    this.throwableObjects.forEach((obj) => this.addToMap(obj));
     this.addToMap(this.character);
     this.addToMap(this.boss);
     this.ctx.translate(-this.camera_x, 0);

@@ -345,18 +345,25 @@ function closeOnOutsideClick(event) {
 
 document.addEventListener("keydown", (event) => {
   keyboard.pressKey(event.code);
+  if (event.code === "KeyD") {
+    keyboard.D = true;
+  }
 });
 
 document.addEventListener("keyup", (event) => {
   keyboard.releaseKey(event.code);
+  if (event.code === "KeyD") {
+    keyboard.D = false;
+  }
 });
 
+
 /**
-   * Retrieves a button element from the DOM using its ID.
-   *
-   * @param {string} buttonId - The ID of the button element to retrieve.
-   * @returns {HTMLElement | null} The button element if found, or null if not found.
-   */
+ * Retrieves a button element from the DOM using its ID.
+ *
+ * @param {string} buttonId - The ID of the button element to retrieve.
+ * @returns {HTMLElement | null} The button element if found, or null if not found.
+ */
 Object.entries(buttonToKey).forEach(([buttonId, key]) => {
   const button = document.getElementById(buttonId);
   button.addEventListener("mousedown", () => {
