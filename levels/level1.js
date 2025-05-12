@@ -26,11 +26,11 @@
  */
 const level1 = new Level(
     [
-      new Puffers(),
+      // new Puffers(),
       new Jellyfish(),
-      new Puffers(),
+      // new Puffers(),
       new Jellyfish(),
-      new Puffers(),
+      // new Puffers(),
       new Jellyfish()
 
     ],

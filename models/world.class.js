@@ -65,6 +65,26 @@ class World {
   setWorld() {
     this.character.world = this;
   }
+  animate() {
+    setInterval(() => {
+      const now = Date.now();
+      this.character.isSleeping = now - this.lastActionTime > 15000 && !this.isDead;
+      if (this.character.energy <= 0) {
+        this.character.playDeathAnimation();
+        return;
+      }
+      if (this.character.isHurt()) {
+        this.character.interruptSleep();
+        const hurtImages = this.lastHurtBy instanceof Jellyfish ? this.IMAGES_HURT_ELECTRIC : this.IMAGES_HURT_POISON;
+        this.playAnimation(hurtImages);
+        this.character.sleeping = false;
+        return;
+      }
+      if (this.keyboard.SPACE || this.keyboard.D) {
+        this.character.attackHandler.handleAttackAnimation();
+      }
+    }, 200);
+  }
 
   /**
    * Periodically checks for collisions in the game world.
@@ -180,7 +200,7 @@ class World {
           enemy.farAway();
         }
       });
-    }, 200);
+    }, 1000 / 60);
   }
 
   /**
@@ -197,7 +217,7 @@ class World {
         this.winScreenShown = true;
         this.triggerWinScreen();
       }
-    }, 200);
+    }, 1000 / 60);
   }
 
   /**

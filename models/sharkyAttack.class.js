@@ -50,7 +50,7 @@ class SharkyAttack {
       this.lastFinSlapTime = now;
     }
     if (this.sharky.isColliding(enemy)) {
-      enemy.reactToHit()
+      enemy.reactToHit();
     }
     return true;
   }
@@ -71,21 +71,23 @@ class SharkyAttack {
     this.sharky.world.checkThrowableObjects();
     this.sharky.playLoopedSound("bubble", this.AUDIO_BUBBLE);
     this.sharky.world.throwableObjects.forEach((bubble, index) => {
+      console.log(`🟢 Prüfe Kollision: Bubble #${index} mit ${enemy.constructor.name}`);
+      console.log(`Bubble → X: ${bubble.x}, Y: ${bubble.y}, W: ${bubble.width}, H: ${bubble.height}`);
+      console.log(`Enemy → X: ${enemy.x}, Y: ${enemy.y}, W: ${enemy.width}, H: ${enemy.height}`);
       if (bubble.isColliding(enemy)) {
         if (typeof enemy.reactToHit === "function") {
           enemy.reactToHit();
-        } 
+        }
         bubble.clearExistingMovement();
         const idx = this.sharky.world.throwableObjects.indexOf(bubble);
         if (idx > -1) {
           this.sharky.world.throwableObjects.splice(idx, 1);
         }
-      } 
+      }
     });
-  
+
     return true;
   }
-  
 
   /**
    * Handles the poison attack logic for the character.
