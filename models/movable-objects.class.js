@@ -22,69 +22,70 @@ class MovableObjects extends DrawableObject {
   isAttacking = false;
   isTransitioning = false;
   specialAttackPlayed = false;
-  speedY = 0;      // Startgeschwindigkeit nach oben
-  speedX = 2;         // Startgeschwindigkeit nach rechts
-  accelerationY =-0.02; // Die Blase soll langsamer nach oben steigen
+  speedY = 0;
+  speedX = 2;
+  accelerationY = -0.02;
   accelerationX = 0;
   isDead = false;
+  animationInterval = false;
 
   applyGravity() {
     this.moveInterval = setInterval(() => {
-      // Position aktualisieren
       this.y += this.speedY;
       this.x += this.speedX;
-  
-      // Beschleunigung anwenden
       this.speedY += this.accelerationY;
       this.speedX += this.accelerationX;
-  
-      // Kontrolle: Wenn die X-Beschleunigung 0 erreicht, stoppt die X-Bewegung
       if (this.accelerationX <= 0 && this.speedX <= 0) {
         this.speedX = 0;
         this.accelerationX = 0;
       }
-  
-  
     }, 1000 / 25);
   }
 
   /**
-   * Plays an animation by cycling through a given array of image paths.
-   * Updates the current image to be displayed based on the provided images array.
-   *
-   * @param {string[]} images - An array of image paths to be used for the animation.
-   *                             If the object is marked as "dead" (`this.dead`),
-   *                             the animation will only proceed if the provided images
-   *                             array matches `this.IMAGES_DEAD`.
-   */
-  playAnimation(images) {
-    if (this.dead && images !== this.IMAGES_DEAD) return;
-    let i = this.currentImage % images.length;
-    let path = images[i];
-    let img = this.imageCache[path];
-    this.img = img;
-    this.currentImage++;
-  }
-
-  /**
-   * Plays an animation by cycling through an array of image paths at a fixed interval.
-   * Once all images have been displayed, the animation stops and an optional callback is executed.
+   * Starts an animation by cycling through a set of images and optionally executes a callback
+   * when the animation completes a full cycle.
    *
    * @param {string[]} images - An array of image paths to be used in the animation.
-   * @param {Function} [callback] - An optional callback function to be executed after the animation completes.
+   * @param {Function} [callback] - An optional callback function to be executed when the animation
+   *                                completes a full cycle.
    */
-  playAnimationOnce(images, callback) {
-    let index = 0;
-    let interval = setInterval(() => {
-      let path = images[index];
-      let img = this.imageCache[path];
-      this.img = img;
-      index++;
-      if (index >= images.length) {
-        clearInterval(interval);
-        if (callback) callback();
-      }
-    }, 200);
+  // startAnimation(images, callback) {
+  //   if (this.dead && images !== this.IMAGES_DEAD) return;
+  //   if (this.currentImages !== images) {
+  //     this.currentImages = images;
+  //     this.currentImageIndex = 0;
+  //   }
+  //   let i = this.currentImageIndex % images.length;
+  //   let path = images[i];
+  //   let img = this.imageCache[path];
+  //   this.img = img;
+  //   this.currentImageIndex++;
+  //   if (callback && i >= images.length) {
+  //     clearInterval(interval);
+  //     callback();
+  //     // if (this.currentImageIndex % images.length === 0) {
+  //     // if (callback) callback();
+  //   }
+  // }
+
+  startAnimation(images, callback) {
+    if (this.dead && images !== this.IMAGES_DEAD) return;
+    if (this.currentImages !== images) {
+      this.currentImages = images;
+      this.currentImageIndex = 0;
+  
+      this.animationInterval = setInterval(() => {
+        let i = this.currentImageIndex % images.length;
+        let path = images[i];
+        let img = this.imageCache[path];
+        this.img = img;
+        this.currentImageIndex++;
+        if (callback ) { // && i >= images.length - 1
+          callback();
+        }
+      }, 200);
+    }
   }
 
   /**
@@ -104,8 +105,6 @@ class MovableObjects extends DrawableObject {
     }, 1000 / 60);
     this.startDirectionToggle(() => (direction *= -1));
   }
-
-  
 
   /**
    * Clears the existing movement interval if it is set.
@@ -128,11 +127,6 @@ class MovableObjects extends DrawableObject {
     this.x -= this.speed;
     this.y += this.speed * direction;
   }
-
-
-
-
-  
 
   /**
    * Starts a loop that repeatedly calls the provided toggle function (`toggleFn`)
@@ -232,10 +226,10 @@ class MovableObjects extends DrawableObject {
    * @returns {boolean} - Returns `true` if the boss object is close to the specified object, otherwise `false`.
    */
   bossIsClose(obj) {
-    const adjustedX = this.x + this.width - this.offset.right + 200;
-    const adjustedY = this.y + this.height - this.offset.bottom + 200;
-    const adjustedWidth = obj.x + obj.width - obj.offset.left + 200;
-    const adjustedHeight = obj.y + obj.height - obj.offset.top + 200;
+    const adjustedX = this.x + this.width - this.offset.right + 400;
+    const adjustedY = this.y + this.height - this.offset.bottom + 400;
+    const adjustedWidth = obj.x + obj.width - obj.offset.left + 400;
+    const adjustedHeight = obj.y + obj.height - obj.offset.top + 400;
     return adjustedX >= obj.x + obj.offset.left && this.x + this.offset.left <= adjustedWidth && adjustedY >= obj.y + obj.offset.top && this.y + this.offset.top <= adjustedHeight;
   }
 
@@ -327,7 +321,7 @@ class MovableObjects extends DrawableObject {
   startTransition() {
     if (!this.isTransitioning) {
       this.isTransitioning = true;
-      this.playAnimationOnce(this.IMAGES_TRANSITION, () => {
+      this.startAnimation(this.IMAGES_TRANSITION, () => {
         this.startAttack();
       });
     }
@@ -345,10 +339,10 @@ class MovableObjects extends DrawableObject {
   startAttack() {
     if (!this.isAttacking) {
       this.isAttacking = true;
-      this.playAnimationOnce(this.IMAGES_ATTACKING, () => {
+      this.startAnimation(this.IMAGES_ATTACKING, () => {
         this.attackInterval = setInterval(() => {
           if (this.isInProximity()) {
-            this.playAnimation(this.IMAGES_ATTACKING);
+            this.startAnimation(this.IMAGES_ATTACKING);
           } else {
             clearInterval(this.attackInterval);
             this.isAttacking = false;

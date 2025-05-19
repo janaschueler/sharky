@@ -2,6 +2,12 @@ class SharkyAttack {
   constructor(sharky) {
     this.sharky = sharky;
     this.world = sharky.world; // Welt von Sharky übernehmen
+    this.audio = {
+      sleep: sharky.AUDIO_SLEEP,
+      bubble: sharky.AUDIO_BUBBLE,
+      finSlap: sharky.AUDIO_FIN_SLAP,
+      noPoison: sharky.AUDIO_NO_POISON,
+    };
   }
   /**
    * Handles the attack animation logic for the character.
@@ -14,18 +20,26 @@ class SharkyAttack {
    */
   handleAttackAnimation() {
     const now = Date.now();
-    if (now - this.lastAttackTime < this.attackCooldown || this.isAttackingAnimation) return;
+    if (now - this.lastAttackTime < this.sharky.attackCooldown || this.isAttackingAnimation) return;
     this.lastAttackTime = now;
     this.isAttackingAnimation = true;
     let attackTriggered = false;
+    const resetAnimationState = () => {
+      this.isAttackingAnimation = false;
+      attackTriggered = false;
+    };
     this.world.level.enemies.forEach((enemy) => {
-      if (this.handleFinAttack(enemy, now)) attackTriggered = true;
-      else if (this.handleBubbleAttack(enemy)) attackTriggered = true;
+      if (this.handleFinAttack(enemy, now, resetAnimationState)) {
+        attackTriggered = true;
+        return;
+      } else if (this.handleBubbleAttack(enemy, resetAnimationState)) {
+        attackTriggered = true;
+        return;
+      }
     });
-    if (this.handlePoisonAttack(this.world.boss)) attackTriggered = true;
     if (!attackTriggered) {
       this.sharky.stopSound("bubble", this.AUDIO_BUBBLE);
-      this.isAttackingAnimation = false;
+      resetAnimationState();
     }
   }
 
@@ -41,16 +55,18 @@ class SharkyAttack {
    * @returns {boolean} - Returns `true` if the attack was successfully initiated, otherwise `false`.
    */
   handleFinAttack(enemy, now) {
-    if (!this.startFinAttack(enemy)) return false;
-    this.sharky.playAnimationOnce(this.sharky.IMAGES_ATTACK_FIN, () => {
-      this.isAttackingAnimation = false;
+    if (!this.startFinAttack(enemy) || this.sharky.isAttackingAnimation) return false;
+    this.sharky.isAttackingAnimation = true;
+    this.sharky.startAnimation(this.sharky.IMAGES_ATTACK_FIN, () => {
+      this.sharky.isAttackingAnimation = false;
+      // this.sharky.stopAnimation();
     });
-    if (now - this.lastFinSlapTime > this.finSlapCooldown) {
-      this.sharky.playSound(this.AUDIO_FIN_SLAP);
+    this.isAttackingAnimation = false;
+    if (now - this.lastFinSlapTime > this.sharky.finSlapCooldown) {
+      this.sharky.playSound(this.AUDIO_FIN_SLAP, () => {
+        this.sharky.isAttackingAnimation = false;
+      });
       this.lastFinSlapTime = now;
-    }
-    if (this.sharky.isColliding(enemy)) {
-      enemy.reactToHit();
     }
     return true;
   }
@@ -63,29 +79,44 @@ class SharkyAttack {
    * @param {Object} enemy - The enemy object to attack. It is expected to have a `reactToHit` method.
    * @returns {boolean} - Returns `true` if the bubble attack was successfully initiated, otherwise `false`.
    */
+  // handleBubbleAttack(enemy) {
+  //   if (!this.startBubbleAttack(enemy)) return false;
+  //   if (this.sharky.bossIsClose(this.sharky.world.boss)) {
+  //     this.handlePoisonAttack(this.sharky.world.boss);
+  //     return;
+  //   }
+  //   // this.sharky.startAnimation(this.sharky.IMAGES_ATTACK_BUBBLE, () => {
+  //   //   this.isAttackingAnimation = false;
+  //   // });
+  //   this.sharky.startAnimation(this.sharky.IMAGES_ATTACK_BUBBLE);
+  //   this.isAttackingAnimation = false;
+
+  //   this.sharky.world.createBubble();
+  //   this.sharky.playLoopedSound("bubble", this.AUDIO_BUBBLE);
+  //   return true;
+  // }
+
   handleBubbleAttack(enemy) {
     if (!this.startBubbleAttack(enemy)) return false;
-    this.sharky.playAnimationOnce(this.sharky.IMAGES_ATTACK_BUBBLE, () => {
-      this.isAttackingAnimation = false;
-    });
-    this.sharky.world.checkThrowableObjects();
-    this.sharky.playLoopedSound("bubble", this.AUDIO_BUBBLE);
-    this.sharky.world.throwableObjects.forEach((bubble, index) => {
-      console.log(`🟢 Prüfe Kollision: Bubble #${index} mit ${enemy.constructor.name}`);
-      console.log(`Bubble → X: ${bubble.x}, Y: ${bubble.y}, W: ${bubble.width}, H: ${bubble.height}`);
-      console.log(`Enemy → X: ${enemy.x}, Y: ${enemy.y}, W: ${enemy.width}, H: ${enemy.height}`);
-      if (bubble.isColliding(enemy)) {
-        if (typeof enemy.reactToHit === "function") {
-          enemy.reactToHit();
-        }
-        bubble.clearExistingMovement();
-        const idx = this.sharky.world.throwableObjects.indexOf(bubble);
-        if (idx > -1) {
-          this.sharky.world.throwableObjects.splice(idx, 1);
-        }
-      }
-    });
+    if (this.sharky.bossIsClose(this.sharky.world.boss)) {
+      this.handlePoisonAttack(this.sharky.world.boss);
+      return;
+    } else {
+      this.startBubbleAttackInterval(enemy);
+      this.sharky.isAttackingBubble = true;
+      return true;
+    }
+  }
 
+  startBubbleAttackInterval(enemy) {
+    // this.sharky.startAnimation(this.sharky.IMAGES_ATTACK_BUBBLE, () => {
+    //   this.isAttackingAnimation = false;
+    // });
+    this.sharky.startAnimation(this.sharky.IMAGES_ATTACK_BUBBLE);
+    this.isAttackingAnimation = false;
+
+    this.sharky.world.createBubble();
+    this.sharky.playLoopedSound("bubble", this.AUDIO_BUBBLE);
     return true;
   }
 
@@ -102,12 +133,11 @@ class SharkyAttack {
    * @returns {boolean} - Returns `true` if the poison attack was successfully executed, otherwise `false`.
    */
   handlePoisonAttack(boss) {
-    if (!this.startPoisonAttack(boss)) return false;
     if (this.world.poison > 0) {
       this.playPoisonAttackAnimation(() => {
         this.isAttackingAnimation = false;
       });
-      this.handlePoisonCollision(boss);
+      this.sharky.world.createBubble(true);
       return true;
     } else {
       this.sharky.playSound(this.AUDIO_NO_POISON);
@@ -123,7 +153,7 @@ class SharkyAttack {
    * @param {Function} callback - A function to be executed after the animation finishes.
    */
   playPoisonAttackAnimation(callback) {
-    this.sharky.playAnimationOnce(this.sharky.IMAGES_ATTACK_BUBBLE_POISON, callback);
+    this.sharky.startAnimation(this.sharky.IMAGES_ATTACK_BUBBLE_POISON, callback);
     this.sharky.playLoopedSound("bubble", this.AUDIO_BUBBLE);
   }
 
@@ -160,6 +190,123 @@ class SharkyAttack {
    */
   startPoisonAttack(enemy) {
     return this.sharky.world.keyboard.D;
+  }
+
+  /**
+   * Resets all animations and related states for the object.
+   * This includes resetting sleep, swim, and sound states.
+   */
+  resetAnimation() {
+    this.resetSleep();
+    this.resetSwim();
+    this.resetSounds();
+    this.resetBubbleAttackState(); // Optional: Wenn Sie spezifische Bubble-Attack-Zustände haben
+    this.resetPoisonAttackState(); // Optional: Wenn Sie spezifische Poison-Attack-Zustände haben  // Optional: Für alle anderen Zustände, die zurückgesetzt werden müssen
+  }
+
+  resetBubbleAttackState() {
+    this.sharky.isAttackingBubble = false;
+    clearInterval(this.bubbleAttackInterval); // Wenn Sie ein Intervall für den Bubble-Angriff haben
+  }
+
+  /**
+   * Setzt spezifische Zustände zurück, die mit dem Gift-Angriff zusammenhängen.
+   */
+  resetPoisonAttackState() {
+    this.sharky.isAttackingPoison = false;
+    clearInterval(this.poisonAttackInterval); // Wenn Sie ein Intervall für den Gift-Angriff haben
+  }
+
+  /**
+   * Resets the sleep state of the object.
+   * - Updates the last action time to the current timestamp.
+   * - Stops the falling asleep process.
+   * - Clears the interval associated with the ping-pong mechanism.
+   */
+  resetSleep() {
+    this.sharky.lastActionTime = Date.now();
+    this.sharky.fallingAsleepStarted = false;
+    this.sharky.stopSound("sleep", this.audio.sleep);
+    clearInterval(this.sharky.pingPongInterval);
+  }
+
+  /**
+   * Resets the swimming state of the shark.
+   * Disables both upward and downward swimming flags
+   * and clears the interval controlling the swim animation.
+   */
+  resetSwim() {
+    this.sharky.swimUp = false;
+    this.sharky.swimDown = false;
+    clearInterval(this.sharky.swimAnimationInterval);
+  }
+
+  /**
+   * Resets the attack state of the shark by stopping all attack-related animations,
+   * clearing attack intervals, stopping associated sounds, and transitioning the shark
+   * back to its idle state.
+   *
+   * @method resetAttack
+   */
+  resetAttack() {
+    this.sharky.isAttacking = false;
+    this.sharky.attackHandler.isAttackingAnimation = false;
+    clearInterval(this.sharky.attackHandler.finSlapInterval);
+    clearInterval(this.sharky.attackHandler.bubbleAttackInterval);
+    clearInterval(this.sharky.attackHandler.poisonAttackInterval);
+    this.sharky.stopSound("bubble", this.audio.bubble);
+    this.sharky.stopSound("fin-slap", this.audio.finSlap);
+    this.sharky.stopSound("no_poison", this.audio.noPoison);
+    this.sharky.handleIdle();
+  }
+
+  /**
+   * Resets all sound effects by stopping the playback of specific audio tracks.
+   * This method stops the following sounds:
+   * - "sleep" sound associated with `AUDIO_SLEEP`
+   * - "bubble" sound associated with `AUDIO_BUBBLE`
+   * - "fin-slap" sound associated with `AUDIO_FIN_SLAP`
+   * - "no_poison" sound associated with `AUDIO_NO_POISON`
+   */
+  resetSounds() {
+    this.sharky.stopSound("sleep", this.audio.sleep);
+    this.sharky.stopSound("bubble", this.audio.bubble);
+    this.sharky.stopSound("fin-slap", this.audio.finSlap);
+    this.sharky.stopSound("no_poison", this.audio.noPoison);
+  }
+
+  /**
+   * Resets the hurt animation state of the object.
+   * This method stops any ongoing animations, clears the hurt state,
+   * resets the sleeping state, clears the reference to the last entity
+   * that caused harm, and loads the default hover image.
+   */
+  resetHurtAnimation() {
+    this.sharky.stopAnimation();
+    this.sharky.isHurt = false;
+    this.sharky.sleeping = false;
+    this.sharky.lastHurtBy = null;
+    this.sharky.loadImage(this.sharky.IMAGES_HOVER[0]);
+  }
+
+  /**
+   * Interrupts the sleep state of the object.
+   * If the object is currently sleeping, this method will:
+   * - Set the `sleeping` state to `false`.
+   * - Reset the `fallingAsleepStarted` flag.
+   * - Clear the interval associated with the `pingPongInterval`.
+   * - Stop the "sleep" sound using the provided audio reference.
+   * - Reset the sleep-related properties of the object.
+   */
+  interruptSleep() {
+    if (this.sharky.sleeping) {
+      this.sharky.sleeping = false;
+      this.sharky.fallingAsleepStarted = false;
+      clearInterval(this.sharky.pingPongInterval);
+      this.sharky.stopSound("sleep", this.audio.sleep);
+      this.resetSleep();
+      this.sharky.allowIdle();
+    }
   }
 }
 

@@ -83,7 +83,7 @@ class Puffers extends MovableObjects {
           this.startTransition();
         }
       } else {
-        this.playAnimation(this.IMAGES_SWIM);
+        this.startAnimation(this.IMAGES_SWIM);
       }
     }, 200);
   }
@@ -99,7 +99,7 @@ class Puffers extends MovableObjects {
   handleDeathAnimation() {
     if (this.hasPlayedDeathAnimation) return;
     this.hasPlayedDeathAnimation = true;
-    this.playAnimationOnce(this.IMAGES_DEAD, () => {
+    this.startAnimation(this.IMAGES_DEAD, () => {
       this.img = this.imageCache[this.IMAGES_DEAD.at(-1)];
       setTimeout(() => {
         this.hasStartedFloating = true;

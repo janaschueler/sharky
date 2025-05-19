@@ -5,38 +5,6 @@
  * @class Sharky
  * @extends MovableObjects
  *
- * @property {number} width - The width of the shark character.
- * @property {number} height - The height of the shark character.
- * @property {number} y - The vertical position of the shark character.
- * @property {number} speed - The movement speed of the shark character.
- * @property {Object} offset - The collision offset for the shark character.
- * @property {Object} world - The game world object the shark interacts with.
- * @property {Object} audioStates - Stores the states of various audio elements.
- * @property {number} lastActionTime - Timestamp of the last action performed by the shark.
- * @property {boolean} isSleeping - Indicates whether the shark is currently sleeping.
- * @property {boolean} isDead - Indicates whether the shark is dead.
- * @property {number} lastFinSlapTime - Timestamp of the last fin slap attack.
- * @property {number} finSlapCooldown - Cooldown time for the fin slap attack in milliseconds.
- * @property {number} lastAttackTime - Timestamp of the last attack performed.
- * @property {number} attackCooldown - Cooldown time for attacks in milliseconds.
- * @property {boolean} sleeping - Indicates whether the shark is in a sleeping state.
- * @property {boolean} isAttackingAnimation - Indicates whether an attack animation is currently playing.
- * @property {string[]} IMAGES_HOVER - Array of image paths for the hover animation.
- * @property {string[]} IMAGES_FALLING_A_SLEEP - Array of image paths for the falling asleep animation.
- * @property {string[]} IMAGES_SLEEP - Array of image paths for the sleeping animation.
- * @property {string[]} IMAGES_SWIM - Array of image paths for the swimming animation.
- * @property {string[]} IMAGES_ATTACK_BUBBLE - Array of image paths for the bubble attack animation.
- * @property {string[]} IMAGES_ATTACK_FIN - Array of image paths for the fin slap attack animation.
- * @property {string[]} IMAGES_ATTACK_BUBBLE_POISON - Array of image paths for the poison bubble attack animation.
- * @property {string[]} IMAGES_HURT_POISON - Array of image paths for the hurt (poisoned) animation.
- * @property {string[]} IMAGES_HURT_ELECTRIC - Array of image paths for the hurt (electric shock) animation.
- * @property {string[]} IMAGES_DEAD - Array of image paths for the death (poisoned) animation.
- * @property {string[]} IMAGES_DEAD_ELECTROSHOCK - Array of image paths for the death (electroshock) animation.
- * @property {Audio} AUDIO_NO_POISON - Audio element for the "no poison" sound.
- * @property {Audio} AUDIO_FIN_SLAP - Audio element for the fin slap sound.
- * @property {Audio} AUDIO_BUBBLE - Audio element for the bubble attack sound.
- * @property {Audio} AUDIO_SLEEP - Audio element for the sleeping sound.
- *
  * @constructor
  * @param {Object} world - The game world object that the Sharky instance interacts with.
  *
@@ -71,6 +39,10 @@ class Sharky extends MovableObjects {
   attackCooldown = 1000; // 1 Sekunde Cooldown
   sleeping = false;
   isAttackingAnimation = false;
+  isAttackingBubble = false;
+  stopReactionInterval = false;
+  preventIdle = false;
+  preventSwim = false;
   IMAGES_HOVER = ["img/1.Sharkie/1.IDLE/1.png", "img/1.Sharkie/1.IDLE/2.png", "img/1.Sharkie/1.IDLE/3.png", "img/1.Sharkie/1.IDLE/4.png", "img/1.Sharkie/1.IDLE/5.png", "img/1.Sharkie/1.IDLE/6.png", "img/1.Sharkie/1.IDLE/7.png", "img/1.Sharkie/1.IDLE/8.png", "img/1.Sharkie/1.IDLE/9.png", "img/1.Sharkie/1.IDLE/10.png", "img/1.Sharkie/1.IDLE/11.png", "img/1.Sharkie/1.IDLE/12.png", "img/1.Sharkie/1.IDLE/13.png", "img/1.Sharkie/1.IDLE/14.png", "img/1.Sharkie/1.IDLE/15.png", "img/1.Sharkie/1.IDLE/16.png", "img/1.Sharkie/1.IDLE/17.png", "img/1.Sharkie/1.IDLE/18.png"];
   IMAGES_FALLING_A_SLEEP = ["img/1.Sharkie/2.Long_IDLE/i1.png", "img/1.Sharkie/2.Long_IDLE/I2.png", "img/1.Sharkie/2.Long_IDLE/I3.png", "img/1.Sharkie/2.Long_IDLE/I4.png", "img/1.Sharkie/2.Long_IDLE/I5.png", "img/1.Sharkie/2.Long_IDLE/I6.png", "img/1.Sharkie/2.Long_IDLE/I7.png"];
   IMAGES_SLEEP = ["img/1.Sharkie/2.Long_IDLE/I8.png", "img/1.Sharkie/2.Long_IDLE/I9.png", "img/1.Sharkie/2.Long_IDLE/I10.png", "img/1.Sharkie/2.Long_IDLE/I11.png", "img/1.Sharkie/2.Long_IDLE/I12.png", "img/1.Sharkie/2.Long_IDLE/I13.png", "img/1.Sharkie/2.Long_IDLE/I14.png"];
@@ -122,101 +94,224 @@ class Sharky extends MovableObjects {
    *
    * @function
    * @memberof Sharky
-   * @description
-   * - Handles movement in all directions (left, right, up, down) based on keyboard input.
-   * - Updates the camera position relative to the character's position.
-   * - Manages attack state when the spacebar is pressed.
-   * - Plays animations for swimming, idle, sleeping, and being hurt.
-   * - Handles sleep state when the character is idle for a certain period.
-   * - Plays death animation when energy is depleted.
-   * - Stops or plays appropriate sounds based on the character's actions.
-   *
-   * @example
-   * // Example usage:
-   * const sharky = new Sharky();
-   * sharky.animate();
    */
-  animate() {
-    setInterval(() => {
-      const k = this.world.keyboard;
-      if (this.energy <= 0) return;
-      if (k.LEFT || k.RIGHT || k.UP || k.DOWN || k.SPACE) {
-        this.stopSound("sleep", this.AUDIO_SLEEP);
-        this.resetSleep();
-      }
-      if (k.RIGHT && this.x < this.world.level.level_end_x) {
-        this.x += this.speed;
-        this.otherDirection = false;
-        this.swimUp = false;
-        this.swimDown = false;
-      }
-      if (k.LEFT && this.x > -1300) {
-        this.x -= this.speed;
-        this.otherDirection = true;
-      }
-      if (k.UP && this.otherDirection === false && this.x > -1300 && this.x < this.world.level.level_end_x && this.y > -80) {
-        this.x += this.speed / 3;
-        this.y -= this.speed / 1.2;
-        this.swimUp = true;
-        this.swimDown = false;
-      }
-      if (k.UP && this.otherDirection === true && this.x > -1300 && this.x < 2000 && this.y > -80) {
-        this.x -= this.speed / 3;
-        this.y -= this.speed / 1.2;
-        this.swimUp = true;
-        this.swimDown = false;
-      }
-      if (k.DOWN && this.otherDirection === false && this.x > -1300 && this.x < this.world.level.level_end_x && this.y < 300) {
-        this.x += this.speed / 3;
-        this.y += this.speed / 1.2;
-        this.swimDown = true;
-        this.swimUp = false;
-      }
-      if (k.DOWN && this.otherDirection === true && this.x > -1300 && this.x < 2000 && this.y < 300) {
-        this.x -= this.speed / 3;
-        this.y += this.speed / 1.2;
-        this.swimDown = true;
-        this.swimUp = false;
-      }
-      this.isAttacking = k.SPACE;
-      if (!k.SPACE) {
-        this.stopSound("bubble", this.AUDIO_BUBBLE);
-      }
-      this.world.camera_x = -this.x + 60;
-    }, 1000 / 60);
+  // animate() {
+  //   let intervalSharkyKey = setInterval(() => {
+  //     clearInterval(intervalSharkyReaction);
+  //     this.keyPressAnimation();
+  //     this.stopReactionInterval = false;
+  //   }, 1000 / 60);
+  //   let intervalSharkyReaction = setInterval(() => {
+  //     clearInterval(intervalSharkyKey);
+  //     if (this.stopReactionInterval) return;
+  //     this.checkSleepingState();
+  //     if (this.energy <= 0) return this.playDeathAnimation();
+  //     if (this.isHurt()) return this.startHurtAnimation();
+  //     if (this.isSleeping && !this.isDead && !this.isHurt()) {
+  //       this.startSleeping();
+  //     } else if (this.isIdle()) {
+  //       this.startIdle();
+  //     } else {
+  //       this.attackHandler.interruptSleep();
+  //       this.handleSwim();
+  //     }
+  //   }, 200);
+  // }
 
-    setInterval(() => {
-      const now = Date.now();
-      this.isSleeping = now - this.lastActionTime > 15000 && !this.isDead;
-      if (this.energy <= 0) {
-        this.playDeathAnimation();
-        return;
-      }
-      if (this.isHurt()) {
-        this.interruptSleep();
-        const hurtImages = this.lastHurtBy instanceof Jellyfish ? this.IMAGES_HURT_ELECTRIC : this.IMAGES_HURT_POISON;
-        this.playAnimation(hurtImages);
-        this.sleeping = false;
-        return;
-      }
-      // Previous postion handleAttackAnimation 
-      // if (this.world.keyboard.SPACE || this.world.keyboard.D) {
-      //   this.attackHandler.handleAttackAnimation();
-      // }
+  animate() {
+    let intervalSharkyKey = setInterval(() => {
+      // clearInterval(intervalSharkyReaction);
+      this.keyPressAnimation();
+      this.stopReactionInterval = false;
+    }, 1000 / 60);
+    let intervalSharkyReaction = setInterval(() => {
+      if (this.stopReactionInterval) return;
+      this.checkSleepingState();
+      if (this.energy <= 0) return this.playDeathAnimation();
+      if (this.isHurt()) return this.startHurtAnimation();
       if (this.isSleeping && !this.isDead && !this.isHurt()) {
-        if (!this.fallingAsleepStarted) {
-          this.fallingAsleep();
-        }
+        this.startSleeping();
       } else if (this.isIdle()) {
-        if (this.isDead) return;
-        this.interruptSleep();
-        this.handleIdle();
+        this.startIdle();
       } else {
-        this.interruptSleep();
+        this.attackHandler.interruptSleep();
         this.handleSwim();
       }
     }, 200);
   }
+
+  /**
+   * Handles the key press animations and interactions for the shark character.
+   *
+   * - Checks the direction of movement based on keyboard input.
+   * - Triggers attack animations and sound effects when the SPACE or D key is pressed.
+   * - Stops the bubble sound effect when the SPACE key is released.
+   * - Updates the camera position relative to the shark's position.
+   *
+   * @returns {void} This method does not return a value.
+   */
+  keyPressAnimation() {
+    this.stopReactionInterval = true;
+    const k = this.world.keyboard;
+    if (this.energy <= 0) return;
+    this.checkDirection(k);
+    if (k.SPACE || k.D) {
+      this.attackHandler.interruptSleep();
+      this.attackHandler.handleAttackAnimation();
+      this.stopAnimation();
+    }
+    this.isAttacking = k.SPACE;
+    if (!k.SPACE) {
+      this.stopSound("bubble", this.AUDIO_BUBBLE);
+    }
+    this.world.camera_x = -this.x + 60;
+  }
+
+  /**
+   * Checks the direction of movement based on the provided key inputs and updates the object's position and animation accordingly.
+   *
+   * @param {Object} k - An object representing the key inputs.
+   * @param {boolean} k.LEFT - Indicates if the left key is pressed.
+   * @param {boolean} k.RIGHT - Indicates if the right key is pressed.
+   * @param {boolean} k.UP - Indicates if the up key is pressed.
+   * @param {boolean} k.DOWN - Indicates if the down key is pressed.
+   * @param {boolean} k.SPACE - Indicates if the space key is pressed.
+   *
+   * @description
+   * - Resets the animation if any of the specified keys are pressed.
+   * - Moves the object to the right if the right key is pressed and within the level boundaries.
+   * - Moves the object to the left if the left key is pressed and within the allowed range.
+   * - Moves the object vertically upwards if the up key is pressed, within the specified x and y boundaries.
+   * - Moves the object vertically downwards if the down key is pressed, within the specified x and y boundaries.
+   */
+  checkDirection(k) {
+    if (k.LEFT || k.RIGHT || k.UP || k.DOWN || k.SPACE || k.D) {
+      // || k.SPACE || k.D
+      this.attackHandler.resetAnimation();
+    }
+    if (k.RIGHT && this.x < this.world.level.level_end_x) {
+      this.swimRight();
+    }
+    if (k.LEFT && this.x > -1300) {
+      this.swimLeft();
+    }
+    if (k.UP && this.x > -1300 && this.x < Math.min(this.world.level.level_end_x, 2000) && this.y > -80) {
+      this.moveVertically("up", this.otherDirection);
+    }
+    if (k.DOWN && this.x > -1300 && this.x < Math.min(this.world.level.level_end_x, 2000) && this.y < 300) {
+      this.moveVertically("down", this.otherDirection);
+    }
+  }
+
+  /**
+   * Moves the object to the left by decreasing its `x` position
+   * based on the current speed. Also sets the `otherDirection`
+   * property to `true` to indicate the object is facing left.
+   */
+  swimLeft() {
+    this.x -= this.speed;
+    this.otherDirection = true;
+  }
+
+  /**
+   * Moves the shark to the right by increasing its x-coordinate by its speed.
+   * Sets the direction flags to indicate the shark is swimming to the right.
+   */
+  swimRight() {
+    this.x += this.speed;
+    this.otherDirection = false;
+    this.swimUp = false;
+    this.swimDown = false;
+  }
+
+  /**
+   * Moves the object vertically in the specified direction, with an optional modifier
+   * for reversing the horizontal movement.
+   *
+   * @param {string} direction - The direction to move vertically, either "up" or "down".
+   * @param {boolean} isOtherDirection - If true, reverses the horizontal movement direction.
+   */
+  moveVertically(direction, isOtherDirection) {
+    const modifier = isOtherDirection ? -1 : 1;
+    if (direction === "up") {
+      this.x += (this.speed / 3) * modifier;
+      this.y -= this.speed / 1.2;
+      this.swimUp = true;
+      this.swimDown = false;
+    } else if (direction === "down") {
+      this.x += (this.speed / 3) * modifier;
+      this.y += this.speed / 1.2;
+      this.swimDown = true;
+      this.swimUp = false;
+    }
+  }
+
+  /**
+   * Checks and updates the sleeping state of the object.
+   * Determines if the object should be marked as sleeping based on the time elapsed
+   * since the last action and whether the object is not dead.
+   *
+   * @returns {void}
+   */
+  checkSleepingState() {
+    const now = Date.now();
+    this.isSleeping = now - this.lastActionTime > 15000 && !this.isDead;
+  }
+
+  /**
+   * Initiates the sleeping process for the object.
+   * If the falling asleep process has not started yet, it triggers the `fallingAsleep` method.
+   */
+  startSleeping() {
+    if (!this.fallingAsleepStarted) {
+      this.stopIdle();
+      this.fallingAsleep();
+    }
+  }
+
+  /**
+   * Initiates the idle state for the object unless it is marked as dead.
+   * If the object is sleeping, it interrupts the sleep state before handling the idle behavior.
+   *
+   * @returns {void}
+   */
+  startIdle() {
+    if (this.isDead || this.preventIdle) return;
+    this.attackHandler.interruptSleep();
+    this.handleIdle();
+  }
+
+  stopIdle() {
+    this.preventIdle = true;
+  }
+
+  allowIdle() {
+    this.preventIdle = false;
+  }
+
+  /**
+   * Triggers the hurt animation for the object, determining the appropriate
+   * animation sequence based on the type of object that caused the damage.
+   * If the object was hurt by a jellyfish, it plays the electric hurt animation;
+   * otherwise, it plays the poison hurt animation. This method also ensures
+   * that the object is not in a sleeping state during the animation.
+   *
+   * @returns {void}
+   */
+  startHurtAnimation() {
+    this.attackHandler.interruptSleep();
+    const hurtImages = this.lastHurtBy instanceof Jellyfish ? this.IMAGES_HURT_ELECTRIC : this.IMAGES_HURT_POISON;
+    this.startAnimation(hurtImages);
+    this.sleeping = false;
+    return;
+  }
+
+  /**
+   * Checks if the sharky character is currently hurt.
+   * The method checks if the last entity that hurt the character is not null.
+   *
+   * @returns {boolean} Returns `true` if the sharky character is hurt, otherwise `false`.
+   */
 
   /**
    * Plays the death animation for the sharky character.
@@ -229,12 +324,12 @@ class Sharky extends MovableObjects {
    */
   playDeathAnimation() {
     const deathImages = this.lastHurtBy instanceof Jellyfish ? this.IMAGES_DEAD_ELECTROSHOCK : this.IMAGES_DEAD;
-    this.interruptSleep();
+    this.attackHandler.interruptSleep();
     if (!this.hasPlayedDeathAnimation) {
       this.hasPlayedDeathAnimation = true;
       this.isDead = true;
       this.sleeping = false;
-      this.playAnimationOnce(deathImages, () => {
+      this.startAnimation(deathImages, () => {
         this.triggerGameOver(deathImages);
       });
     } else {
@@ -268,7 +363,7 @@ class Sharky extends MovableObjects {
     this.fallingAsleepStarted = true;
     this.sleeping = true;
     if (this.sleeping) {
-      this.playAnimationOnce(this.IMAGES_FALLING_A_SLEEP, () => {
+      this.startAnimation(this.IMAGES_FALLING_A_SLEEP, () => {
         this.playPingPongAnimation(this.IMAGES_SLEEP);
         this.playLoopedSound("sleep", this.AUDIO_SLEEP);
       });
@@ -282,7 +377,7 @@ class Sharky extends MovableObjects {
    */
   isIdle() {
     const k = this.world.keyboard;
-    return !k.LEFT && !k.RIGHT && !k.UP && !k.DOWN;
+    return !k.LEFT && !k.RIGHT && !k.UP && !k.DOWN && !k.SPACE && !k.D;
   }
 
   /**
@@ -292,31 +387,18 @@ class Sharky extends MovableObjects {
    * @method handleIdle
    */
   handleIdle() {
-    this.playAnimation(this.IMAGES_HOVER);
+    this.startAnimation(this.IMAGES_HOVER);
     this.swimUp = false;
     this.swimDown = false;
   }
 
   /**
    * Handles the swimming animation for the sharky object.
-   * This method triggers the playAnimation function with the swimming images.
+   * This method triggers the startAnimation function with the swimming images.
    */
   handleSwim() {
-    this.playAnimation(this.IMAGES_SWIM);
+    this.startAnimation(this.IMAGES_SWIM);
   }
-
-  /**
-   * Resets the sleep state of the object.
-   * - Updates the last action time to the current timestamp.
-   * - Stops the falling asleep process.
-   * - Clears the interval associated with the ping-pong mechanism.
-   */
-  resetSleep() {
-    this.lastActionTime = Date.now();
-    this.fallingAsleepStarted = false;
-    clearInterval(this.pingPongInterval);
-  }
-
   /**
    * Sets the volume levels for various audio elements associated with the sharky object.
    * Adjusts the volume for bubble sounds, fin slap sounds, sleep sounds, and no poison sounds.
@@ -328,24 +410,5 @@ class Sharky extends MovableObjects {
     this.AUDIO_FIN_SLAP.volume = 0.5;
     this.AUDIO_SLEEP.volume = 0.2;
     this.AUDIO_NO_POISON.volume = 1;
-  }
-
-  /**
-   * Interrupts the sleep state of the object.
-   * If the object is currently sleeping, this method will:
-   * - Set the `sleeping` state to `false`.
-   * - Reset the `fallingAsleepStarted` flag.
-   * - Clear the interval associated with the `pingPongInterval`.
-   * - Stop the "sleep" sound using the provided audio reference.
-   * - Reset the sleep-related properties of the object.
-   */
-  interruptSleep() {
-    if (this.sleeping) {
-      this.sleeping = false;
-      this.fallingAsleepStarted = false;
-      clearInterval(this.pingPongInterval);
-      this.stopSound("sleep", this.AUDIO_SLEEP);
-      this.resetSleep();
-    }
   }
 }

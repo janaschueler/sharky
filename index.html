@@ -45,17 +45,16 @@
           </button>
         </div>
       </div>
+      <div id="start-screen">
+        <img id="start-background" src="img/6.Botones/Start/start.png" />
+        <img id="start-btn" src="img/6.Botones/Start/1.png" />
+      </div>
       <div id="instructionsOverlay" class="d_none opacity">
         <button id="close-btn" onclick="closeInstruction()">
           <img src="img/icon/xmark-solid.svg" alt="close" />
         </button>
         <img class="instructions" src="img/6.Botones/Instructions 2.png" alt="Instructions" />
         <div class="instructionGuide">Collect at least 2 coins and 3 poison vials to challenge the Boss!</div>
-      </div>
-
-      <div id="start-screen">
-        <img id="start-background" src="img/6.Botones/Start/start.png" />
-        <img id="start-btn" src="img/6.Botones/Start/1.png" />
       </div>
     </div>
   </body>
@@ -75,10 +74,11 @@
   <script src="./models/keyboard.class.js"></script>
   <script src="./models/sharkyAttack.class.js"></script>
   <script src="./models/sharky.class.js"></script>
-  <!-- <script src="./models/bubble.class.js"></script> -->
   <script src="./models/throwable-objects.class.js"></script>
   <script src="./models/level.class.js"></script>
   <script src="./levels/level1.js"></script>
+  <script src="./models/collisionDetector.class.js"></script>
+  <script src="./models/endGame.class.js"></script>
   <script src="./models/world.class.js"></script>
   <script src="./js/game.js"></script>
 </html>

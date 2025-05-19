@@ -21,6 +21,7 @@ class World {
   statusBarPoison = new StatusBarPoison();
   backgroundMusic = new Audio("audio/wave_sounds.mp3");
   throwableObjects = [];
+  intervalIds = [];
   IMAGES_GAME_OVER = ["img/6.Botones/Tittles/Game Over/Recurso 9.png", "img/6.Botones/Tittles/Game Over/Recurso 10.png", "img/6.Botones/Tittles/Game Over/Recurso 11.png", "img/6.Botones/Tittles/Game Over/Recurso 12.png", "img/6.Botones/Tittles/Game Over/Recurso 13.png"];
   IMAGES_TRAY_AGAIN = ["img/6.Botones/Try again/Recurso 15.png", "img/6.Botones/Try again/Recurso 16.png", "img/6.Botones/Try again/Recurso 17.png", "img/6.Botones/Try again/Recurso 18.png"];
   IMAGES_WIN = ["img/6.Botones/Tittles/You win/Mesa de trabajo 1.png"];
@@ -44,6 +45,7 @@ class World {
     this.canvas = canvas;
     this.keyboard = keyboard || new Keyboard();
     this.character = new Sharky(this);
+    this.collisionDetector = new CollisionDetector();
     this.boss = new Boss(this);
     this.boss.animate();
     this.setWorld();
@@ -65,26 +67,6 @@ class World {
   setWorld() {
     this.character.world = this;
   }
-  animate() {
-    setInterval(() => {
-      const now = Date.now();
-      this.character.isSleeping = now - this.lastActionTime > 15000 && !this.isDead;
-      if (this.character.energy <= 0) {
-        this.character.playDeathAnimation();
-        return;
-      }
-      if (this.character.isHurt()) {
-        this.character.interruptSleep();
-        const hurtImages = this.lastHurtBy instanceof Jellyfish ? this.IMAGES_HURT_ELECTRIC : this.IMAGES_HURT_POISON;
-        this.playAnimation(hurtImages);
-        this.character.sleeping = false;
-        return;
-      }
-      if (this.keyboard.SPACE || this.keyboard.D) {
-        this.character.attackHandler.handleAttackAnimation();
-      }
-    }, 200);
-  }
 
   /**
    * Periodically checks for collisions in the game world.
@@ -96,57 +78,26 @@ class World {
    */
   engage() {
     setInterval(() => {
-      this.checkEnemyCollisions();
-      this.checkCollectableCollisions();
-    }, 200);
+      this.collisionDetector.checkEnemyCollisions(this.character, this.level.enemies, this.boss, this.statusBar, this.coins);
+      this.collisionDetector.checkCollectableCollisions(this.character, this.level.collectables, (collectable, index) => this.handleCollectableCollision(collectable, index));
+      this.collisionDetector.checkBubbleCollisions(this.throwableObjects, this.level.enemies);
+    }, 1000 / 60);
   }
 
   /**
-   * Checks for collisions between the character and all enemies in the current level.
-   * If the character has collected at least 2 coins, the boss enemy is included in the collision check.
-   * When a collision is detected, the character takes damage, the enemy's hurt sound is played (if available),
-   * and the status bar is updated to reflect the character's remaining energy.
+   * Creates a bubble when the 'D' key is pressed, with an optional poison effect.
+   * Ensures a cooldown period of 1 second between bubble creations.
+   *
+   * @param {boolean} [isPoison=false] - Determines if the bubble is poisonous. Defaults to `false`.
    */
-  checkEnemyCollisions() {
-    const allEnemies = [...this.level.enemies];
-    if (this.coins >= 2) {
-      allEnemies.push(this.boss);
-    }
-    allEnemies.forEach((enemy) => {
-      if (this.character.isColliding(enemy)) {
-        this.character.lastHurtBy = enemy;
-        this.character.hit();
-        if (enemy.playSoundHurt) {
-          enemy.playSoundHurt();
-        }
-        this.statusBar.setPercentage(this.character.energy);
-      }
-    });
-  }
-
-  /**
-   * Checks for collisions between the character and collectable items in the level.
-   * If a collision is detected, it handles the collision by invoking the appropriate method.
-   */
-  checkCollectableCollisions() {
-    this.level.collectables.forEach((collectable, index) => {
-      if (this.character.isColliding(collectable)) {
-        this.handleCollectableCollision(collectable, index);
-      }
-    });
-  }
-
-  checkThrowableObjects() {
+  createBubble(isPoison = false) {
     if (this.keyboard.D && !this.bubbleCoolDown) {
       this.bubbleCoolDown = true;
+      new ThrowableObject(this.character.x, this.character.y, this, isPoison);
       setTimeout(() => {
-        let bubble = new ThrowableObject(this.character.x, this.character.y, this);
-        this.throwableObjects.push(bubble);
-      }, 1650);
+        this.bubbleCoolDown = false;
+      }, 1000);
     }
-    setTimeout(() => {
-      this.bubbleCoolDown = false;
-    }, 1000);
 
     if (!this.keyboard.D) {
       this.bubbleCoolDown = false;
@@ -270,8 +221,8 @@ class World {
    * @param {Object} mo - The movable object to be added to the map.
    * @param {boolean} [mo.otherDirection] - Indicates whether the image should be flipped horizontally.
    * @param {Function} mo.draw - A method to draw the object on the canvas context.
-   * @param {Function} mo.drawFrame - A method to draw the object's frame on the canvas context.
    */
+
   addToMap(mo) {
     this.ctx.save();
     if (!mo.swimUp && !mo.swimDown) {
@@ -280,16 +231,16 @@ class World {
       }
       mo.draw(this.ctx);
       if (mo.otherDirection) {
-        this.flipImageBack(mo);
+        mo.x = mo.x * -1;
       }
-    }
-    if (mo.swimUp || mo.swimDown) {
+    } else {
       if (mo.otherDirection) {
         const angle = mo.swimUp ? -25 : 25;
         this.rotateImageFlipped(mo, angle);
+      } else {
+        const angle = mo.swimUp ? -25 : 25;
+        this.rotateImage(mo, angle);
       }
-      const angle = mo.swimUp ? -25 : 25;
-      this.rotateImage(mo, angle);
     }
     this.ctx.restore();
   }
@@ -345,112 +296,17 @@ class World {
   }
 
   /**
-   * Flips the image of the given object horizontally by inverting its x-coordinate
-   * and restores the canvas context to its previous state.
-   *
-   * @param {Object} mo - The object whose image is to be flipped.
-   *                      It is expected to have an `x` property representing its x-coordinate.
-   */
-  flipImageBack(mo) {
-    mo.x = mo.x * -1;
-  }
-
-  /**
-   * Triggers the game over screen sequence. This method ensures that the game over
-   * screen is only shown once by checking the `endScreenShown` flag. If the flag
-   * is not set, it plays the "lost" music, displays the game over animation, and
-   * shows the "Try Again" button.
-   *
-   * @method
-   * @returns {void}
+   * Triggers the Game Over screen using the CollisionDetector.
    */
   triggerGameOverScreen() {
-    if (this.endScreenShown) return;
-    this.endScreenShown = true;
-    this.lostMusic.play();
-    this.showGameOverAnimation();
-    this.showTryAgainButton();
+    EndGame.triggerGameOverScreen(this);
   }
 
   /**
-   * Displays a game over animation by creating an image element,
-   * adding it to the document body, and cycling through a series
-   * of images at a set interval to create an animation effect.
-   *
-   * @method
-   */
-  showGameOverAnimation() {
-    const gameOverImg = document.createElement("img");
-    gameOverImg.classList.add("game-over-image");
-    document.body.appendChild(gameOverImg);
-    let frame = 0;
-    setInterval(() => {
-      gameOverImg.src = this.IMAGES_GAME_OVER[frame];
-      frame++;
-      if (frame >= this.IMAGES_GAME_OVER.length) frame = 0;
-    }, 150);
-  }
-
-  /**
-   * Displays a "Try Again" button on the screen.
-   * The button is created as an image element, styled with a specific class,
-   * and appended to the document body. When clicked, the button reloads the page.
-   */
-  showTryAgainButton() {
-    const tryAgainBtn = document.createElement("img");
-    tryAgainBtn.src = this.IMAGES_TRAY_AGAIN[0];
-    tryAgainBtn.classList.add("try-again-button");
-    document.body.appendChild(tryAgainBtn);
-    tryAgainBtn.addEventListener("click", () => location.reload());
-  }
-
-  /**
-   * Triggers the win screen sequence if it has not already been shown.
-   * This includes playing the win music, displaying the win animation,
-   * and showing the "Try Again" button.
-   *
-   * @returns {void}
+   * Triggers the Win screen using the CollisionDetector.
    */
   triggerWinScreen() {
-    if (this.endScreenShown) return;
-    this.endScreenShown = true;
-    this.winMusic.play();
-    this.showWinAnimation();
-    this.showTryAgainButton();
-  }
-
-  /**
-   * Displays a win animation on the screen by creating an image element
-   * and cycling through a series of images at a fixed interval.
-   *
-   * The animation loops through the `IMAGES_WIN_ANIMATION` array, updating
-   * the `src` attribute of the image element to display each frame in sequence.
-   *
-   * @method
-   */
-  showWinAnimation() {
-    const winImg = document.createElement("img");
-    winImg.classList.add("win-screen-image");
-    document.body.appendChild(winImg);
-    let frame = 0;
-    setInterval(() => {
-      winImg.src = this.IMAGES_WIN_ANIMATION[frame];
-      frame++;
-      if (frame >= this.IMAGES_WIN_ANIMATION.length) frame = 0;
-    }, 150);
-  }
-
-  /**
-   * Creates and displays a "Try Again" button on the screen.
-   * The button is styled with a CSS class for positioning and visuals.
-   * When clicked, the button triggers a page reload to restart the game.
-   */
-  showTryAgainButton() {
-    const tryAgainBtn = document.createElement("img");
-    tryAgainBtn.src = this.IMAGES_TRAY_AGAIN[0];
-    tryAgainBtn.classList.add("try-again-button");
-    document.body.appendChild(tryAgainBtn);
-    tryAgainBtn.addEventListener("click", () => location.reload());
+    EndGame.triggerWinScreen(this);
   }
 
   /**

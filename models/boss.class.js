@@ -97,11 +97,11 @@ class Boss extends MovableObjects {
         } else if (this.shouldAttackOnCollision()) {
           this.handleAttackContact();
         } else if (this.shouldPlayIntro(introIndex)) {
-          this.playAnimation(this.IMAGES_INTRO);
+          this.startAnimation(this.IMAGES_INTRO);
           introIndex++;
           this.stopSound("attack", this.AUDIO_ATTACK);
         } else {
-          this.playAnimation(this.IMAGES_HOVER);
+          this.startAnimation(this.IMAGES_HOVER);
           this.stopSound("attack", this.AUDIO_ATTACK);
         }
       }
@@ -120,7 +120,7 @@ class Boss extends MovableObjects {
     this.isDead = true;
     if (!this.deadAnimationPlayed) {
       this.deadAnimationPlayed = true;
-      this.playAnimationOnce(this.IMAGES_DEAD, () => {
+      this.startAnimation(this.IMAGES_DEAD, () => {
         this.img = this.imageCache[this.IMAGES_DEAD.at(-1)];
         this.stopSound("attack", this.AUDIO_ATTACK);
       });
@@ -154,9 +154,9 @@ class Boss extends MovableObjects {
    */
   handleHurt() {
     this.hurtAnimationPlaying = true;
-    this.playAnimationOnce(this.IMAGES_HURT, () => {
+    this.startAnimation(this.IMAGES_HURT, () => {
       this.hurtAnimationPlaying = false;
-      this.playAnimation(this.IMAGES_HOVER);
+      this.startAnimation(this.IMAGES_HOVER);
       this.stopSound("attack", this.AUDIO_ATTACK);
     });
   }
@@ -184,7 +184,7 @@ class Boss extends MovableObjects {
    */
   handleAttackMovement() {
     this.movingAttack();
-    this.playAnimation(this.IMAGES_ATTACKING);
+    this.startAnimation(this.IMAGES_ATTACKING);
     this.playLoopedSound("attack", this.AUDIO_ATTACK);
   }
 
@@ -205,7 +205,7 @@ class Boss extends MovableObjects {
    * @method
    */
   handleAttackContact() {
-    this.playAnimation(this.IMAGES_ATTACKING);
+    this.startAnimation(this.IMAGES_ATTACKING);
     this.playLoopedSound("attack", this.AUDIO_ATTACK);
   }
 

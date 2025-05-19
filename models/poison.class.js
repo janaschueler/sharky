@@ -43,7 +43,7 @@ class Poison extends MovableObjects {
    */
   animate() {
     setInterval(() => {
-      this.playAnimation(this.IMAGES_GROUND);
+      this.startAnimation(this.IMAGES_GROUND);
     }, 300);
   }
 

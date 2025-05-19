@@ -60,13 +60,13 @@ animate() {
 startBehaviorLoop() {
   setInterval(() => {
     if (this.dead) {
-      this.playAnimation(this.IMAGES_DEAD);
+      this.startAnimation(this.IMAGES_DEAD);
     } else if (this.isInProximity()) {
       if (!this.isTransitioning && !this.isAttacking) {
         this.startTransition();
       }
     } else {
-      this.playAnimation(this.IMAGES_SWIM);
+      this.startAnimation(this.IMAGES_SWIM);
     }
   }, 200);
 }

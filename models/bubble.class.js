@@ -18,7 +18,7 @@ class Bubble extends ThrowableObject {
 
   animate() {
     setInterval(() => {
-      this.playAnimation(this.IMAGES_BUBBLE);
+      this.startAnimation(this.IMAGES_BUBBLE);
     }, 300);
   }
 
