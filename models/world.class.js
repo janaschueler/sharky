@@ -50,7 +50,7 @@ class World {
     this.draw();
     this.engage();
     this.checkProximity();
-    this.throwableObjects = [];
+    this.collisionDetector = new CollisionDetector(this);
     this.checkEnemyState();
     this.initBackgroundMusic();
     this.gameOverLoader = new DrawableObject();
@@ -96,86 +96,143 @@ class World {
    */
   engage() {
     setInterval(() => {
-      this.checkEnemyCollisions();
-      this.checkCollectableCollisions();
+      this.collisionDetector.checkEnemyCollisions();
+      this.collisionDetector.checkCollectableCollisions();
+      this.collisionDetector.checkBubbleCollisions(this.throwableObjects, this.level.enemies, this.boss);
     }, 200);
   }
 
-  /**
-   * Checks for collisions between the character and all enemies in the current level.
-   * If the character has collected at least 2 coins, the boss enemy is included in the collision check.
-   * When a collision is detected, the character takes damage, the enemy's hurt sound is played (if available),
-   * and the status bar is updated to reflect the character's remaining energy.
-   */
-  checkEnemyCollisions() {
-    const allEnemies = [...this.level.enemies];
-    if (this.coins >= 2) {
-      allEnemies.push(this.boss);
-    }
-    allEnemies.forEach((enemy) => {
-      if (this.character.isColliding(enemy)) {
-        this.character.lastHurtBy = enemy;
-        this.character.hit();
-        if (enemy.playSoundHurt) {
-          enemy.playSoundHurt();
-        }
-        this.statusBar.setPercentage(this.character.energy);
-      }
-    });
-  }
+  // /**
+  //  * Checks for collisions between the character and all enemies in the current level.
+  //  * If the character has collected at least 2 coins, the boss enemy is included in the collision check.
+  //  * When a collision is detected, the character takes damage, the enemy's hurt sound is played (if available),
+  //  * and the status bar is updated to reflect the character's remaining energy.
+  //  */
+  // checkEnemyCollisions() {
+  //   const allEnemies = [...this.level.enemies];
+  //   if (this.coins >= 2) {
+  //     allEnemies.push(this.boss);
+  //   }
+  //   allEnemies.forEach((enemy) => {
+  //     if (this.character.isColliding(enemy)) {
+  //       this.character.lastHurtBy = enemy;
+  //       this.character.hit();
+  //       if (enemy.playSoundHurt) {
+  //         enemy.playSoundHurt();
+  //       }
+  //       this.statusBar.setPercentage(this.character.energy);
+  //     }
+  //   });
+  // }
 
-  /**
-   * Checks for collisions between the character and collectable items in the level.
-   * If a collision is detected, it handles the collision by invoking the appropriate method.
-   */
-  checkCollectableCollisions() {
-    this.level.collectables.forEach((collectable, index) => {
-      if (this.character.isColliding(collectable)) {
-        this.handleCollectableCollision(collectable, index);
-      }
-    });
-  }
+  // /**
+  //  * Checks for collisions between the character and collectable items in the level.
+  //  * If a collision is detected, it handles the collision by invoking the appropriate method.
+  //  */
+  // checkCollectableCollisions() {
+  //   this.level.collectables.forEach((collectable, index) => {
+  //     if (this.character.isColliding(collectable)) {
+  //       this.handleCollectableCollision(collectable, index);
+  //     }
+  //   });
+  // }
 
-  checkThrowableObjects() {
-    if (this.keyboard.D && !this.bubbleCoolDown) {
-      this.bubbleCoolDown = true;
-      setTimeout(() => {
-        let bubble = new ThrowableObject(this.character.x, this.character.y, this);
-        this.throwableObjects.push(bubble);
-      }, 1650);
-    }
-    setTimeout(() => {
-      this.bubbleCoolDown = false;
-    }, 1000);
+  // /**
+  //  * Checks for collisions between bubbles and enemies (including boss), and handles collision logic.
+  //  * Removes bubbles that have collided with enemies or the boss.
+  //  *
+  //  * @param {Array<Object>} bubbles - The array of bubble objects to check for collisions.
+  //  * @param {Array<Object>} enemies - The array of enemy objects (e.g., Jellyfish).
+  //  * @param {Object|null} boss - The boss enemy object, or null if no boss is present.
+  //  */
+  // checkBubbleCollisions(bubbles, enemies, boss) {
+  //   const allEnemies = [...enemies];
+  //   if (boss) allEnemies.push(boss);
+  //   const bubblesToRemove = [];
+  //   bubbles.forEach((bubble, index) => {
+  //     allEnemies.forEach((enemy) => {
+  //       if (enemy instanceof Jellyfish) {
+  //         this.handleJellyfishCollision(enemy, bubble, index, bubblesToRemove);
+  //       }
+  //       if (enemy === boss) {
+  //         this.handleBossCollision(enemy, bubble, index, bubblesToRemove);
+  //       }
+  //     });
+  //   });
+  //   this.removeBubbles(bubbles, bubblesToRemove);
+  // }
 
-    if (!this.keyboard.D) {
-      this.bubbleCoolDown = false;
-    }
-  }
+  // /**
+  //  * Handles the collision between a jellyfish and a bubble.
+  //  * If a collision is detected, triggers the jellyfish's reaction,
+  //  * clears the bubble's movement, and marks the bubble for removal.
+  //  *
+  //  * @param {Object} jellyfish - The jellyfish object involved in the collision.
+  //  * @param {Object} bubble - The bubble object involved in the collision.
+  //  * @param {number} index - The index of the bubble in the bubbles array.
+  //  * @param {number[]} bubblesToRemove - Array to store indices of bubbles to be removed.
+  //  */
+  // handleJellyfishCollision(jellyfish, bubble, index, bubblesToRemove) {
+  //   if (jellyfish.isColliding(bubble)) {
+  //     jellyfish.reactToHit();
+  //     bubble.clearExistingMovement();
+  //     bubblesToRemove.push(index);
+  //   }
+  // }
 
-  /**
-   * Handles the collision between the player and a collectable item.
-   * Depending on the type of collectable (Coin or Poison), it updates the player's
-   * inventory and status bar, plays a sound, and removes the collectable from the level.
-   *
-   * @param {Object} collectable - The collectable item that the player collides with.
-   * @param {number} index - The index of the collectable in the level's collectables array.
-   * @returns {void}
-   */
-  handleCollectableCollision(collectable, index) {
-    if (collectable instanceof Coin && this.coins < 6) {
-      collectable.playSound();
-      this.coins++;
-      this.statusBarCoins.setWallet(this.coins);
-    } else if (collectable instanceof Poison && this.poison < 6) {
-      collectable.playSound();
-      this.poison++;
-      this.statusBarPoison.storePoison(this.poison);
-    } else {
-      return;
-    }
-    this.level.collectables.splice(index, 1);
-  }
+  // /**
+  //  * Handles the collision between the boss and a bubble.
+  //  * If the bubble is poisonous and collides with the boss, the boss reacts to the hit,
+  //  * the bubble's movement is cleared, and the bubble's index is added to the removal list.
+  //  *
+  //  * @param {Object} boss - The boss entity that may collide with the bubble.
+  //  * @param {Object} bubble - The bubble entity to check for collision and poison status.
+  //  * @param {number} index - The index of the bubble in the bubbles array.
+  //  * @param {number[]} bubblesToRemove - Array to which the index of the bubble will be pushed if it should be removed.
+  //  */
+  // handleBossCollision(boss, bubble, index, bubblesToRemove) {
+  //   if (bubble.isPoison && boss.isColliding(bubble)) {
+  //     boss.reactToHit();
+  //     bubble.clearExistingMovement();
+  //     bubblesToRemove.push(index);
+  //   }
+  // }
+
+  // /**
+  //  * Removes bubbles from the given array at the specified indices.
+  //  *
+  //  * @param {Array} bubbles - The array of bubbles to remove from.
+  //  * @param {number[]} bubblesToRemove - An array of indices indicating which bubbles to remove.
+  //  */
+  // removeBubbles(bubbles, bubblesToRemove) {
+  //   bubblesToRemove.reverse().forEach((index) => {
+  //     bubbles.splice(index, 1);
+  //   });
+  // }
+
+  // /**
+  //  * Handles the collision between the player and a collectable item.
+  //  * Depending on the type of collectable (Coin or Poison), it updates the player's
+  //  * inventory and status bar, plays a sound, and removes the collectable from the level.
+  //  *
+  //  * @param {Object} collectable - The collectable item that the player collides with.
+  //  * @param {number} index - The index of the collectable in the level's collectables array.
+  //  * @returns {void}
+  //  */
+  // handleCollectableCollision(collectable, index) {
+  //   if (collectable instanceof Coin && this.coins < 6) {
+  //     collectable.playSound();
+  //     this.coins++;
+  //     this.statusBarCoins.setWallet(this.coins);
+  //   } else if (collectable instanceof Poison && this.poison < 6) {
+  //     collectable.playSound();
+  //     this.poison++;
+  //     this.statusBarPoison.storePoison(this.poison);
+  //   } else {
+  //     return;
+  //   }
+  //   this.level.collectables.splice(index, 1);
+  // }
 
   /**
    * Periodically checks the proximity of all enemies (including the boss) to the character.
@@ -280,16 +337,16 @@ class World {
       }
       mo.draw(this.ctx);
       if (mo.otherDirection) {
-        this.flipImageBack(mo);
+        mo.x = mo.x * -1;
       }
-    }
-    if (mo.swimUp || mo.swimDown) {
+    } else {
       if (mo.otherDirection) {
         const angle = mo.swimUp ? -25 : 25;
         this.rotateImageFlipped(mo, angle);
+      } else {
+        const angle = mo.swimUp ? -25 : 25;
+        this.rotateImage(mo, angle);
       }
-      const angle = mo.swimUp ? -25 : 25;
-      this.rotateImage(mo, angle);
     }
     this.ctx.restore();
   }
@@ -355,6 +412,27 @@ class World {
     mo.x = mo.x * -1;
   }
 
+  // /**
+  //  * Creates a bubble when the 'D' key is pressed, with an optional poison effect.
+  //  * Ensures a cooldown period of 1 second between bubble creations.
+  //  *
+  //  * @param {boolean} [isPoison=false] - Determines if the bubble is poisonous. Defaults to `false`.
+  //  */
+  createBubble(isPoison = false) {
+    if (this.keyboard.D && !this.bubbleCoolDown) {
+      this.bubbleCoolDown = true;
+      const direction = this.character.otherDirection ? "left" : "right";
+      setTimeout(() => {
+        new ThrowableObject(this.character.x, this.character.y, this, isPoison, direction);
+        this.bubbleCoolDown = false;
+      }, 1500);
+    }
+
+    if (!this.keyboard.D) {
+      this.bubbleCoolDown = false;
+    }
+  }
+
   /**
    * Triggers the game over screen sequence. This method ensures that the game over
    * screen is only shown once by checking the `endScreenShown` flag. If the flag
@@ -401,7 +479,11 @@ class World {
     tryAgainBtn.src = this.IMAGES_TRAY_AGAIN[0];
     tryAgainBtn.classList.add("try-again-button");
     document.body.appendChild(tryAgainBtn);
-    tryAgainBtn.addEventListener("click", () => location.reload());
+    tryAgainBtn.addEventListener("click", () => {
+      document.body.innerHTML = "";
+      init();
+      startGame();
+    });
   }
 
   /**

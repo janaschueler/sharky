@@ -22,29 +22,36 @@ class MovableObjects extends DrawableObject {
   isAttacking = false;
   isTransitioning = false;
   specialAttackPlayed = false;
-  speedY = 0;      // Startgeschwindigkeit nach oben
-  speedX = 2;         // Startgeschwindigkeit nach rechts
-  accelerationY =-0.02; // Die Blase soll langsamer nach oben steigen
+  speedY = 0;
+  speedX = 2;
+  accelerationY = -0.02;
   accelerationX = 0;
   isDead = false;
+  currentlyPlayingOnce = false;
 
-  applyGravity() {
+  // applyGravity(direction = 1) {
+  //   this.moveInterval = setInterval(() => {
+  //     this.x += this.speedX * direction;
+  //     this.y += this.speedY;
+  //     this.speedY += this.accelerationY;
+  //     this.speedX += this.accelerationX;
+  //     if (this.accelerationX <= 0 && this.speedX <= 0) {
+  //       this.speedX = 0;
+  //       this.accelerationX = 0;
+  //     }
+  //   }, 1000 / 25);
+  // }
+
+  applyGravity(direction = 1) {
     this.moveInterval = setInterval(() => {
-      // Position aktualisieren
+      this.x += this.speedX * direction;
       this.y += this.speedY;
-      this.x += this.speedX;
-  
-      // Beschleunigung anwenden
       this.speedY += this.accelerationY;
       this.speedX += this.accelerationX;
-  
-      // Kontrolle: Wenn die X-Beschleunigung 0 erreicht, stoppt die X-Bewegung
       if (this.accelerationX <= 0 && this.speedX <= 0) {
         this.speedX = 0;
         this.accelerationX = 0;
       }
-  
-  
     }, 1000 / 25);
   }
 
@@ -59,10 +66,10 @@ class MovableObjects extends DrawableObject {
    */
   playAnimation(images) {
     if (this.dead && images !== this.IMAGES_DEAD) return;
+    if (this.currentlyPlayingOnce) return; 
     let i = this.currentImage % images.length;
     let path = images[i];
-    let img = this.imageCache[path];
-    this.img = img;
+    this.img = this.imageCache[path];
     this.currentImage++;
   }
 
@@ -74,14 +81,15 @@ class MovableObjects extends DrawableObject {
    * @param {Function} [callback] - An optional callback function to be executed after the animation completes.
    */
   playAnimationOnce(images, callback) {
+    this.currentlyPlayingOnce = true;
     let index = 0;
     let interval = setInterval(() => {
       let path = images[index];
-      let img = this.imageCache[path];
-      this.img = img;
+      this.img = this.imageCache[path];
       index++;
       if (index >= images.length) {
         clearInterval(interval);
+        this.currentlyPlayingOnce = false;
         if (callback) callback();
       }
     }, 200);
@@ -105,8 +113,6 @@ class MovableObjects extends DrawableObject {
     this.startDirectionToggle(() => (direction *= -1));
   }
 
-  
-
   /**
    * Clears the existing movement interval if it is set.
    * This method stops any ongoing movement by clearing the interval
@@ -128,11 +134,6 @@ class MovableObjects extends DrawableObject {
     this.x -= this.speed;
     this.y += this.speed * direction;
   }
-
-
-
-
-  
 
   /**
    * Starts a loop that repeatedly calls the provided toggle function (`toggleFn`)

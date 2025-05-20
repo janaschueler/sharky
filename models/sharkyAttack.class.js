@@ -3,30 +3,73 @@ class SharkyAttack {
     this.sharky = sharky;
     this.world = sharky.world; // Welt von Sharky übernehmen
   }
+
   /**
-   * Handles the attack animation logic for the character.
-   * Ensures that attacks are triggered only if the cooldown period has passed
-   * and manages the animation state during attacks. It checks for different
-   * types of attacks (fin, bubble, and poison) against enemies and the boss.
-   * If no attack is triggered, it stops the bubble sound and resets the animation state.
+   * Handles the attack animation logic for the sharky character.
+   * Prevents multiple attacks during the cooldown period, interrupts sleep state,
+   * attempts all possible attacks, and manages attack state and sound effects.
    *
    * @returns {void}
    */
   handleAttackAnimation() {
     const now = Date.now();
-    if (now - this.lastAttackTime < this.attackCooldown || this.isAttackingAnimation) return;
-    this.lastAttackTime = now;
-    this.isAttackingAnimation = true;
-    let attackTriggered = false;
-    this.world.level.enemies.forEach((enemy) => {
-      if (this.handleFinAttack(enemy, now)) attackTriggered = true;
-      else if (this.handleBubbleAttack(enemy)) attackTriggered = true;
-    });
-    if (this.handlePoisonAttack(this.world.boss)) attackTriggered = true;
-    if (!attackTriggered) {
+    if (this.isAttackingAnimation || now - this.lastAttackTime < this.attackCooldown) return;
+    this.sharky.interruptSleep();
+    const attackTriggered = this.tryAllAttacks(now);
+
+    if (attackTriggered) {
+      this.lastAttackTime = now;
+      this.isAttackingAnimation = true;
+    } else {
       this.sharky.stopSound("bubble", this.AUDIO_BUBBLE);
-      this.isAttackingAnimation = false;
     }
+  }
+
+  /**
+   * Attempts to perform all available attacks based on the current keyboard input.
+   *
+   * Checks if the SPACE key is pressed to attempt a fin attack, or if the D key is pressed
+   * to attempt a bubble or poison attack. Returns true if any attack is successfully performed.
+   *
+   * @param {number} now - The current timestamp or game tick used for attack timing.
+   * @returns {boolean} True if an attack was performed, otherwise false.
+   */
+  tryAllAttacks(now) {
+    const space = this.sharky.world.keyboard.SPACE;
+    const d = this.sharky.world.keyboard.D;
+    if (space && this.tryFinAttack(now)) return true;
+    if (d && this.tryBubbleOrPoisonAttack()) return true;
+    return false;
+  }
+
+  /**
+   * Attempts to perform a fin attack on each enemy in the current level.
+   * Iterates through all enemies and calls `handleFinAttack` for each.
+   * If an attack is successful on any enemy, returns `true` immediately.
+   * Otherwise, returns `false` after checking all enemies.
+   *
+   * @param {number} now - The current timestamp or game tick.
+   * @returns {boolean} `true` if a fin attack was successful on any enemy, otherwise `false`.
+   */
+  tryFinAttack(now) {
+    for (const enemy of this.world.level.enemies) {
+      if (this.handleFinAttack(enemy, now)) return true;
+    }
+    return false;
+  }
+
+  /**
+   * Attempts to perform a bubble attack on each enemy in the current level.
+   * If a bubble attack is successful on any enemy, returns true immediately.
+   * If no bubble attack succeeds, attempts a poison attack on the boss enemy.
+   *
+   * @returns {boolean} True if either a bubble attack on any enemy or a poison attack on the boss is successful, otherwise false.
+   */
+  tryBubbleOrPoisonAttack() {
+    for (const enemy of this.world.level.enemies) {
+      if (this.handleBubbleAttack(enemy)) return true;
+    }
+    return this.handlePoisonAttack(this.world.boss);
   }
 
   /**
@@ -41,14 +84,13 @@ class SharkyAttack {
    * @returns {boolean} - Returns `true` if the attack was successfully initiated, otherwise `false`.
    */
   handleFinAttack(enemy, now) {
-    if (!this.startFinAttack(enemy)) return false;
+    if (now - this.lastFinSlapTime < this.sharky.finSlapCooldown) return false;
+    this.isAttackingAnimation = true;
+    this.sharky.lastFinSlapTime = now;
     this.sharky.playAnimationOnce(this.sharky.IMAGES_ATTACK_FIN, () => {
       this.isAttackingAnimation = false;
     });
-    if (now - this.lastFinSlapTime > this.finSlapCooldown) {
-      this.sharky.playSound(this.AUDIO_FIN_SLAP);
-      this.lastFinSlapTime = now;
-    }
+    this.sharky.playSound(this.AUDIO_FIN_SLAP);
     if (this.sharky.isColliding(enemy)) {
       enemy.reactToHit();
     }
@@ -64,28 +106,23 @@ class SharkyAttack {
    * @returns {boolean} - Returns `true` if the bubble attack was successfully initiated, otherwise `false`.
    */
   handleBubbleAttack(enemy) {
-    if (!this.startBubbleAttack(enemy)) return false;
+    if (this.sharky.bossIsClose(this.sharky.world.boss)) {
+      this.handlePoisonAttack(this.sharky.world.boss);
+      return;
+    } else {
+      this.startBubbleAttackInterval(enemy);
+      this.sharky.isAttackingBubble = true;
+      return true;
+    }
+  }
+
+  startBubbleAttackInterval(enemy) {
     this.sharky.playAnimationOnce(this.sharky.IMAGES_ATTACK_BUBBLE, () => {
       this.isAttackingAnimation = false;
     });
-    this.sharky.world.checkThrowableObjects();
-    this.sharky.playLoopedSound("bubble", this.AUDIO_BUBBLE);
-    this.sharky.world.throwableObjects.forEach((bubble, index) => {
-      console.log(`🟢 Prüfe Kollision: Bubble #${index} mit ${enemy.constructor.name}`);
-      console.log(`Bubble → X: ${bubble.x}, Y: ${bubble.y}, W: ${bubble.width}, H: ${bubble.height}`);
-      console.log(`Enemy → X: ${enemy.x}, Y: ${enemy.y}, W: ${enemy.width}, H: ${enemy.height}`);
-      if (bubble.isColliding(enemy)) {
-        if (typeof enemy.reactToHit === "function") {
-          enemy.reactToHit();
-        }
-        bubble.clearExistingMovement();
-        const idx = this.sharky.world.throwableObjects.indexOf(bubble);
-        if (idx > -1) {
-          this.sharky.world.throwableObjects.splice(idx, 1);
-        }
-      }
-    });
 
+    this.sharky.world.createBubble();
+    this.sharky.playLoopedSound("bubble", this.AUDIO_BUBBLE);
     return true;
   }
 
@@ -101,30 +138,19 @@ class SharkyAttack {
    * @param {Object} boss - The boss object that the poison attack is targeting.
    * @returns {boolean} - Returns `true` if the poison attack was successfully executed, otherwise `false`.
    */
+
   handlePoisonAttack(boss) {
-    if (!this.startPoisonAttack(boss)) return false;
-    if (this.world.poison > 0) {
-      this.playPoisonAttackAnimation(() => {
-        this.isAttackingAnimation = false;
-      });
-      this.handlePoisonCollision(boss);
-      return true;
-    } else {
+    if (this.world.poison <= 0) {
       this.sharky.playSound(this.AUDIO_NO_POISON);
       this.isAttackingAnimation = false;
+      return false;
     }
-    return false;
-  }
-
-  /**
-   * Plays the poison attack animation and triggers a callback upon completion.
-   * Additionally, plays a looped bubble sound effect during the animation.
-   *
-   * @param {Function} callback - A function to be executed after the animation finishes.
-   */
-  playPoisonAttackAnimation(callback) {
-    this.sharky.playAnimationOnce(this.sharky.IMAGES_ATTACK_BUBBLE_POISON, callback);
+    this.sharky.playAnimationOnce(this.sharky.IMAGES_ATTACK_BUBBLE_POISON, () => {
+      this.isAttackingAnimation = false;
+    });
     this.sharky.playLoopedSound("bubble", this.AUDIO_BUBBLE);
+    this.sharky.world.createBubble(true);
+    return true;
   }
 
   /**
@@ -140,26 +166,6 @@ class SharkyAttack {
       this.world.poison--;
       this.world.statusBarPoison.storePoison(this.world.poison);
     }
-  }
-
-  startFinAttack() {
-    return this.sharky.world.keyboard.SPACE;
-  }
-
-  startBubbleAttack() {
-    return this.sharky.world.keyboard.D;
-  }
-
-  /**
-   * Initiates a poison attack on the specified enemy if the conditions are met.
-   * The attack is triggered only if the enemy is an instance of the Boss class
-   * and is either close to or colliding with the attacker.
-   *
-   * @param {Object} enemy - The enemy object to target for the poison attack.
-   * @returns {boolean} - Returns true if the poison attack can be initiated, otherwise false.
-   */
-  startPoisonAttack(enemy) {
-    return this.sharky.world.keyboard.D;
   }
 }
 

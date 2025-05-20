@@ -11,27 +11,62 @@ class ThrowableObject extends MovableObjects {
   };
 
   IMAGES_BUBBLE = ["img/1.Sharkie/4.Attack/Bubble trap/Bubble.png"];
-  // IMAGES_BUBBLE_POISON = ["img/1.Sharkie/4.Attack/Bubble trap/Poisoned Bubble (for whale).png"];
+  IMAGES_BUBBLE_POISON = ["img/1.Sharkie/4.Attack/Bubble trap/Poisoned Bubble (for whale).png"];
 
-  constructor(x, y, world) {
+  constructor(x, y, world, isPoison = false, direction = "right") {
     super();
-    this.loadImage(this.IMAGES_BUBBLE[0]);
-    this.loadImages(this.IMAGES_BUBBLE);
-    this.x = x + 140;
+    if (direction === "left") {
+      this.x = x - 0; 
+    } else {
+      this.x = x + 140; 
+    }
     this.y = y + 100;
     this.world = world;
+    this.isPoison = isPoison;
+    this.direction = direction;
+    this.initBubble();
+  }
+
+  initBubble() {
+    if (this.isPoison) {
+      this.loadImage(this.IMAGES_BUBBLE_POISON[0]);
+      this.loadImages(this.IMAGES_BUBBLE_POISON);
+      this.playAnimation(this.IMAGES_BUBBLE_POISON);
+      this.reducePoisonLevel();
+    } else {
+      this.loadImage(this.IMAGES_BUBBLE[0]);
+      this.loadImages(this.IMAGES_BUBBLE);
+      this.playAnimation(this.IMAGES_BUBBLE);
+    }
+    if (this.direction === "left") {
+      this.throwLeft();
+    } else {
+      this.throwRight();
+    }
     this.world.throwableObjects.push(this);
-    this.throwRight();
   }
 
   throwRight() {
     if (this.moveInterval) clearInterval(this.moveInterval);
-    const maxDistance = 80;
-    const startPosition = this.x;
-    this.applyGravity();
+    this.applyGravity(1);
+  }
+
+  throwLeft() {
+    if (this.moveInterval) clearInterval(this.moveInterval);
+    this.applyGravity(-1);
   }
 
   clearExistingMovement() {
     if (this.moveInterval) clearInterval(this.moveInterval);
+    this.moveInterval = null;
+  }
+
+  reducePoisonLevel() {
+    const poisonBar = this.world.statusBarPoison;
+
+    if (poisonBar.poison > 0) {
+      poisonBar.poison--;
+      poisonBar.update();
+    }
   }
 }

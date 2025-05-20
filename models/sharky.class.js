@@ -130,17 +130,12 @@ class Sharky extends MovableObjects {
    * - Handles sleep state when the character is idle for a certain period.
    * - Plays death animation when energy is depleted.
    * - Stops or plays appropriate sounds based on the character's actions.
-   *
-   * @example
-   * // Example usage:
-   * const sharky = new Sharky();
-   * sharky.animate();
    */
   animate() {
     setInterval(() => {
       const k = this.world.keyboard;
       if (this.energy <= 0) return;
-      if (k.LEFT || k.RIGHT || k.UP || k.DOWN || k.SPACE) {
+      if (k.LEFT || k.RIGHT || k.UP || k.DOWN || k.SPACE || k.D) {
         this.stopSound("sleep", this.AUDIO_SLEEP);
         this.resetSleep();
       }
@@ -178,6 +173,10 @@ class Sharky extends MovableObjects {
         this.swimDown = true;
         this.swimUp = false;
       }
+      if (k.SPACE || k.D) {
+        this.interruptSleep();
+        this.attackHandler.handleAttackAnimation();
+      }
       this.isAttacking = k.SPACE;
       if (!k.SPACE) {
         this.stopSound("bubble", this.AUDIO_BUBBLE);
@@ -199,10 +198,6 @@ class Sharky extends MovableObjects {
         this.sleeping = false;
         return;
       }
-      // Previous postion handleAttackAnimation 
-      // if (this.world.keyboard.SPACE || this.world.keyboard.D) {
-      //   this.attackHandler.handleAttackAnimation();
-      // }
       if (this.isSleeping && !this.isDead && !this.isHurt()) {
         if (!this.fallingAsleepStarted) {
           this.fallingAsleep();
@@ -292,6 +287,7 @@ class Sharky extends MovableObjects {
    * @method handleIdle
    */
   handleIdle() {
+    if (this.world.currentlyPlayingOnce) return;
     this.playAnimation(this.IMAGES_HOVER);
     this.swimUp = false;
     this.swimDown = false;
@@ -302,6 +298,7 @@ class Sharky extends MovableObjects {
    * This method triggers the playAnimation function with the swimming images.
    */
   handleSwim() {
+    if (this.world.currentlyPlayingOnce) return;
     this.playAnimation(this.IMAGES_SWIM);
   }
 
