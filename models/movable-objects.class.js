@@ -268,36 +268,23 @@ class MovableObjects extends DrawableObject {
    * Handles the "hit" action for the object. This method reduces the object's energy
    * and updates the last hit timestamp if certain conditions are met.
    *
-   * Conditions:
-   * - The object must not be dead (`isDead` must be false).
-   * - The object's energy must be greater than 0.
-   * - The object must not currently be attacking (`isAttacking` must be false).
-   * - The SPACE key must not be pressed (`world.keyboard.SPACE` must be false).
-   * - The time since the last hit must be at least 3000 milliseconds, and the special attack
-   *   must not have been played (`specialAttackPlayed` must be false).
-   *
-   * Effects:
-   * - Reduces the object's energy by 20 (minimum energy is 0).
-   * - Updates the `lastHit` timestamp to the current time.
-   *
    * @returns {boolean} Returns `false` if the hit action cannot be performed due to any of the conditions.
    */
   hit() {
     let now = new Date().getTime();
     if (this.isDead || this.energy <= 0) return false;
     if (this.isAttacking) return;
-
     if (this.world.keyboard.SPACE) {
       if (this.isBoss && this.poisonAmount <= 0) {
       }
       if (this.isBoss && this.poisonAmount > 0) {
-        return; // Blockiert den Schaden
+        return; 
       }
       if (!this.isBoss) {
         return;
       }
     }
-    if ((!this.lastHit || now - this.lastHit >= 3000) && !this.specialAttackPlayed) {
+    if ((!this.lastHit || now - this.lastHit >= 1000) && !this.specialAttackPlayed) {
       this.energy -= 20;
       if (this.energy < 0) {
         this.energy = 0;
@@ -334,14 +321,14 @@ class MovableObjects extends DrawableObject {
     }
   }
 
+
   /**
-   * Initiates the attack sequence for the object. If the object is not already attacking,
-   * it sets the `isAttacking` flag to true and plays the attack animation once. After the
-   * initial animation, it periodically checks if the object is in proximity to continue
-   * the attack animation. If the object is no longer in proximity, the attack sequence
-   * is stopped, and the `isAttacking` and `isTransitioning` flags are reset.
+   * Initiates the attack sequence for the object if it is not already attacking.
+   * Plays the attack animation once, then repeatedly checks if the object is still in proximity to continue attacking.
+   * If the object is no longer in proximity, stops the attack and resets relevant state flags.
    *
    * @method
+   * @returns {void}
    */
   startAttack() {
     if (!this.isAttacking) {

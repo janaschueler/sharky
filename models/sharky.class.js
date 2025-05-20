@@ -110,80 +110,83 @@ class Sharky extends MovableObjects {
     this.loadImages(this.IMAGES_DEAD);
     this.loadImages(this.IMAGES_DEAD_ELECTROSHOCK);
     this.setAudioVolumes();
-    this.animate();
+    this.keyPressAnimation();
+    this.startBehaviorLoop();
     this.attackHandler = new SharkyAttack(this);
+    this.movementHandler = new SharkyMovements(this);
   }
 
   /**
-   * Animates the shark character by handling movement, actions, and animations.
-   * This function uses two intervals:
-   * - One for updating the character's position and state based on keyboard input.
-   * - Another for handling animations, sleep state, and other behaviors.
+   * Starts a high-frequency loop that checks for keyboard input
+   * and triggers corresponding movement or attack methods.
    *
    * @function
    * @memberof Sharky
    * @description
-   * - Handles movement in all directions (left, right, up, down) based on keyboard input.
-   * - Updates the camera position relative to the character's position.
-   * - Manages attack state when the spacebar is pressed.
-   * - Plays animations for swimming, idle, sleeping, and being hurt.
-   * - Handles sleep state when the character is idle for a certain period.
-   * - Plays death animation when energy is depleted.
-   * - Stops or plays appropriate sounds based on the character's actions.
+   * - Runs 60 times per second (approx. every 16.67ms).
+   * - Processes user input to update Sharky's position, direction, and actions.
+   * - Uses `SharkyMovements` to handle movement and animation logic.
+   * - Stops processing if Sharky's energy is depleted.
+   * - Updates the camera position to follow Sharky horizontally.
+   * - Stops the bubble sound when the attack key (SPACE) is released.
+   *
+   * @example
+   * sharky.keyPressAnimation(); // Starts movement handling loop
    */
-  animate() {
+
+  keyPressAnimation() {
     setInterval(() => {
       const k = this.world.keyboard;
       if (this.energy <= 0) return;
-      if (k.LEFT || k.RIGHT || k.UP || k.DOWN || k.SPACE || k.D) {
-        this.stopSound("sleep", this.AUDIO_SLEEP);
-        this.resetSleep();
+      if (this.movementHandler.anyKeyPress(k)) {
+        this.movementHandler.anyKeyPressMethod();
       }
-      if (k.RIGHT && this.x < this.world.level.level_end_x) {
-        this.x += this.speed;
-        this.otherDirection = false;
-        this.swimUp = false;
-        this.swimDown = false;
+      if (this.movementHandler.swimRight(k)) {
+        this.movementHandler.swimRightMethod();
       }
-      if (k.LEFT && this.x > -1300) {
-        this.x -= this.speed;
-        this.otherDirection = true;
+      if (this.movementHandler.simLeft(k)) {
+        this.movementHandler.swimLeftMethod();
       }
-      if (k.UP && this.otherDirection === false && this.x > -1300 && this.x < this.world.level.level_end_x && this.y > -80) {
-        this.x += this.speed / 3;
-        this.y -= this.speed / 1.2;
-        this.swimUp = true;
-        this.swimDown = false;
+      if (this.movementHandler.swimUpRight(k)) {
+        this.movementHandler.swimUpRightMethod();
       }
-      if (k.UP && this.otherDirection === true && this.x > -1300 && this.x < 2000 && this.y > -80) {
-        this.x -= this.speed / 3;
-        this.y -= this.speed / 1.2;
-        this.swimUp = true;
-        this.swimDown = false;
+      if (this.movementHandler.swimUpLeft(k)) {
+        this.movementHandler.swimUpLeftMethod();
       }
-      if (k.DOWN && this.otherDirection === false && this.x > -1300 && this.x < this.world.level.level_end_x && this.y < 300) {
-        this.x += this.speed / 3;
-        this.y += this.speed / 1.2;
-        this.swimDown = true;
-        this.swimUp = false;
+      if (this.movementHandler.swimDownRight(k)) {
+        this.movementHandler.swimDownRightMethod();
       }
-      if (k.DOWN && this.otherDirection === true && this.x > -1300 && this.x < 2000 && this.y < 300) {
-        this.x -= this.speed / 3;
-        this.y += this.speed / 1.2;
-        this.swimDown = true;
-        this.swimUp = false;
+      if (this.movementHandler.swimDownLeft(k)) {
+        this.movementHandler.swimDownLeftMethod();
       }
-      if (k.SPACE || k.D) {
-        this.interruptSleep();
-        this.attackHandler.handleAttackAnimation();
+      if (this.movementHandler.attack(k)) {
+        this.movementHandler.attackMethod();
       }
-      this.isAttacking = k.SPACE;
       if (!k.SPACE) {
         this.stopSound("bubble", this.AUDIO_BUBBLE);
       }
       this.world.camera_x = -this.x + 60;
     }, 1000 / 60);
+  }
 
+  /**
+   * Starts a periodic behavior check loop that handles Sharky's current state,
+   * including sleep, idle, hurt, swimming, or death animations.
+   *
+   * @function
+   * @memberof Sharky
+   * @description
+   * - Runs every 200ms (5 times per second).
+   * - Determines Sharky's current behavioral state based on activity and health.
+   * - Handles transitions between different states:
+   *   - Sleeping if idle for over 15 seconds.
+   *   - Playing death animation if energy reaches 0.
+   *   - Reacting to hurt state.
+   *   - Idling or swimming if active.
+   * - Delegates animation logic to helper methods or movement handler.
+   */
+
+  startBehaviorLoop() {
     setInterval(() => {
       const now = Date.now();
       this.isSleeping = now - this.lastActionTime > 15000 && !this.isDead;
@@ -192,11 +195,7 @@ class Sharky extends MovableObjects {
         return;
       }
       if (this.isHurt()) {
-        this.interruptSleep();
-        const hurtImages = this.lastHurtBy instanceof Jellyfish ? this.IMAGES_HURT_ELECTRIC : this.IMAGES_HURT_POISON;
-        this.playAnimation(hurtImages);
-        this.sleeping = false;
-        return;
+        return this.commenceHurtAnimation();
       }
       if (this.isSleeping && !this.isDead && !this.isHurt()) {
         if (!this.fallingAsleepStarted) {
@@ -204,13 +203,38 @@ class Sharky extends MovableObjects {
         }
       } else if (this.isIdle()) {
         if (this.isDead) return;
-        this.interruptSleep();
-        this.handleIdle();
+        this.commenceHover();
       } else {
-        this.interruptSleep();
-        this.handleSwim();
+        this.movementHandler.commenceSwim();
       }
     }, 200);
+  }
+
+  /**
+   * Initiates the hover behavior for the sharky instance.
+   * This method interrupts the sleep state and handles idle behavior.
+   *
+   * @returns {void}
+   */
+  commenceHover() {
+    this.interruptSleep();
+    this.handleIdle();
+  }
+
+  /**
+   * Initiates the hurt animation for the sharky character.
+   * Determines the appropriate hurt animation based on the source of damage (Jellyfish or poison),
+   * interrupts any ongoing sleep state, and plays the corresponding animation.
+   * Also ensures the character is not marked as sleeping.
+   *
+   * @returns {void}
+   */
+  commenceHurtAnimation() {
+    this.interruptSleep();
+    const hurtImages = this.lastHurtBy instanceof Jellyfish ? this.IMAGES_HURT_ELECTRIC : this.IMAGES_HURT_POISON;
+    this.playAnimation(hurtImages);
+    this.sleeping = false;
+    return;
   }
 
   /**
@@ -321,8 +345,8 @@ class Sharky extends MovableObjects {
    * @method
    */
   setAudioVolumes() {
-    this.AUDIO_BUBBLE.volume = 0.1;
-    this.AUDIO_FIN_SLAP.volume = 0.5;
+    this.AUDIO_BUBBLE.volume = 1;
+    this.AUDIO_FIN_SLAP.volume = 1;
     this.AUDIO_SLEEP.volume = 0.2;
     this.AUDIO_NO_POISON.volume = 1;
   }

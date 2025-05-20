@@ -116,6 +116,14 @@ class SharkyAttack {
     }
   }
 
+  /**
+   * Initiates the bubble attack sequence for the enemy.
+   * Plays the bubble attack animation once, creates a bubble in the game world,
+   * and starts playing the bubble sound effect in a loop.
+   *
+   * @param {Object} enemy - The enemy object that will perform the bubble attack.
+   * @returns {boolean} Returns true when the bubble attack interval is started.
+   */
   startBubbleAttackInterval(enemy) {
     this.sharky.playAnimationOnce(this.sharky.IMAGES_ATTACK_BUBBLE, () => {
       this.isAttackingAnimation = false;
