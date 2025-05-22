@@ -2,12 +2,6 @@
  * Base class for all objects in the game that can move and interact with the environment.
  * Extends DrawableObject and adds properties related to movement, direction,
  * interaction states, and combat behavior.
- *
- * Features:
- * - Horizontal and vertical movement states
- * - Basic energy/health tracking
- * - Flags for proximity, transition, and attack logic
- * - Randomized speed for natural variation in behavior
  */
 
 class MovableObjects extends DrawableObject {
@@ -29,19 +23,12 @@ class MovableObjects extends DrawableObject {
   isDead = false;
   currentlyPlayingOnce = false;
 
-  // applyGravity(direction = 1) {
-  //   this.moveInterval = setInterval(() => {
-  //     this.x += this.speedX * direction;
-  //     this.y += this.speedY;
-  //     this.speedY += this.accelerationY;
-  //     this.speedX += this.accelerationX;
-  //     if (this.accelerationX <= 0 && this.speedX <= 0) {
-  //       this.speedX = 0;
-  //       this.accelerationX = 0;
-  //     }
-  //   }, 1000 / 25);
-  // }
-
+  /**
+   * Simulates gravity and horizontal movement.
+   * Updates `x` and `y` based on current speed and acceleration.
+   *
+   * @param {number} [direction=1] - Movement direction: 1 = right, -1 = left.
+   */
   applyGravity(direction = 1) {
     this.moveInterval = setInterval(() => {
       this.x += this.speedX * direction;
@@ -59,14 +46,11 @@ class MovableObjects extends DrawableObject {
    * Plays an animation by cycling through a given array of image paths.
    * Updates the current image to be displayed based on the provided images array.
    *
-   * @param {string[]} images - An array of image paths to be used for the animation.
-   *                             If the object is marked as "dead" (`this.dead`),
-   *                             the animation will only proceed if the provided images
-   *                             array matches `this.IMAGES_DEAD`.
+   * @param {string[]} images - An array of image paths to be used for the animation. If the object is marked as "dead" (`this.dead`), the animation will only proceed if the provided images array matches `this.IMAGES_DEAD`.
    */
   playAnimation(images) {
     if (this.dead && images !== this.IMAGES_DEAD) return;
-    if (this.currentlyPlayingOnce) return; 
+    if (this.currentlyPlayingOnce) return;
     let i = this.currentImage % images.length;
     let path = images[i];
     this.img = this.imageCache[path];
@@ -126,9 +110,7 @@ class MovableObjects extends DrawableObject {
    * Moves the object to the left by decreasing its x-coordinate and adjusts the y-coordinate
    * based on the specified direction and the object's speed.
    *
-   * @param {number} direction - The direction factor for vertical movement.
-   *                             A positive value moves the object down,
-   *                             and a negative value moves it up.
+   * @param {number} direction - The direction factor for vertical movement. A positive value moves the object down, and a negative value moves it up.
    */
   performLeftMovement(direction) {
     this.x -= this.speed;
@@ -139,8 +121,7 @@ class MovableObjects extends DrawableObject {
    * Starts a loop that repeatedly calls the provided toggle function (`toggleFn`)
    * at random intervals between 1 second and 12 seconds.
    *
-   * @param {Function} toggleFn - The function to be called at each interval.
-   *                              This function is responsible for toggling the direction or performing any desired action.
+   * @param {Function} toggleFn - The function to be called at each interval. This function is responsible for toggling the direction or performing any desired action.
    */
   startDirectionToggle(toggleFn) {
     const loop = () => {
@@ -233,10 +214,10 @@ class MovableObjects extends DrawableObject {
    * @returns {boolean} - Returns `true` if the boss object is close to the specified object, otherwise `false`.
    */
   bossIsClose(obj) {
-    const adjustedX = this.x + this.width - this.offset.right + 200;
-    const adjustedY = this.y + this.height - this.offset.bottom + 200;
-    const adjustedWidth = obj.x + obj.width - obj.offset.left + 200;
-    const adjustedHeight = obj.y + obj.height - obj.offset.top + 200;
+    const adjustedX = this.x + this.width - this.offset.right + 500;
+    const adjustedY = this.y + this.height - this.offset.bottom + 500;
+    const adjustedWidth = obj.x + obj.width - obj.offset.left + 500;
+    const adjustedHeight = obj.y + obj.height - obj.offset.top + 500;
     return adjustedX >= obj.x + obj.offset.left && this.x + this.offset.left <= adjustedWidth && adjustedY >= obj.y + obj.offset.top && this.y + this.offset.top <= adjustedHeight;
   }
 
@@ -264,26 +245,21 @@ class MovableObjects extends DrawableObject {
     return thisRight >= objLeft && thisRight <= objLeft + 10 && thisBottom >= objTop && thisTop <= objBottom;
   }
 
+
   /**
-   * Handles the "hit" action for the object. This method reduces the object's energy
-   * and updates the last hit timestamp if certain conditions are met.
-   *
-   * @returns {boolean} Returns `false` if the hit action cannot be performed due to any of the conditions.
+   * Handles the logic when the object is hit.
+   * 
+   * - Reduces energy by 20 if the object is not dead, has energy, and is not attacking.
+   * - Ensures that hits can only occur at least 1 second apart.
+   * - Does not allow energy to drop below 0.
+   * - Updates the last hit timestamp.
+   * 
+   * @returns {boolean|undefined} Returns false if the object is dead or has no energy, otherwise undefined.
    */
   hit() {
     let now = new Date().getTime();
     if (this.isDead || this.energy <= 0) return false;
     if (this.isAttacking) return;
-    if (this.world.keyboard.SPACE) {
-      if (this.isBoss && this.poisonAmount <= 0) {
-      }
-      if (this.isBoss && this.poisonAmount > 0) {
-        return; 
-      }
-      if (!this.isBoss) {
-        return;
-      }
-    }
     if ((!this.lastHit || now - this.lastHit >= 1000) && !this.specialAttackPlayed) {
       this.energy -= 20;
       if (this.energy < 0) {
@@ -320,7 +296,6 @@ class MovableObjects extends DrawableObject {
       });
     }
   }
-
 
   /**
    * Initiates the attack sequence for the object if it is not already attacking.
@@ -402,11 +377,6 @@ class MovableObjects extends DrawableObject {
    * @param {string} name - The name of the audio sound to stop.
    * @param {HTMLAudioElement} audio - The audio element associated with the sound.
    * @returns {void} This method does not return a value.
-   *
-   * @description
-   * This method pauses the audio playback, resets its playback position to the beginning,
-   * disables looping, and updates the internal audio state to indicate that the sound is no longer playing.
-   * If the audio element is not provided or the audio state for the given name is not active, the method exits early.
    */
   stopSound(name, audio) {
     if (!audio || !this.audioStates[name]) return;
@@ -424,10 +394,6 @@ class MovableObjects extends DrawableObject {
    * @returns {void} This function does not return a value.
    *
    * @throws {DOMException} If the audio playback fails, a warning is logged to the console.
-   *
-   * @example
-   * const audioElement = new Audio('path/to/sound.mp3');
-   * playLoopedSound('backgroundMusic', audioElement);
    */
   playLoopedSound(name, audio) {
     if (!audio || this.audioStates[name]) return;

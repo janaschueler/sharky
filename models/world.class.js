@@ -7,7 +7,7 @@
 
 class World {
   character;
-  level = level1;
+  level = createLevel1();
   canvas;
   ctx; // canvas context
   keyboard;
@@ -99,6 +99,7 @@ class World {
       this.collisionDetector.checkEnemyCollisions();
       this.collisionDetector.checkCollectableCollisions();
       this.collisionDetector.checkBubbleCollisions(this.throwableObjects, this.level.enemies, this.boss);
+      this.collisionDetector.checkFinAttackOnPuffers();
     }, 200);
   }
 
@@ -342,20 +343,46 @@ class World {
    * The button is created as an image element, styled with a specific class,
    * and appended to the document body. When clicked, the button reloads the page.
    */
+  // showTryAgainButton() {
+  //   const tryAgainBtn = document.createElement("img");
+  //   tryAgainBtn.src = this.IMAGES_TRAY_AGAIN[0];
+  //   tryAgainBtn.classList.add("try-again-button");
+  //   document.body.appendChild(tryAgainBtn);
+  //   tryAgainBtn.addEventListener("click", () => {
+  //     const gameContainer = document.querySelector(".game-container");
+  //     gameContainer.innerHTML = "";
+  //     init();
+  //     startGame();
+  //   }); }
+  //
+
   showTryAgainButton() {
     const tryAgainBtn = document.createElement("img");
     tryAgainBtn.src = this.IMAGES_TRAY_AGAIN[0];
     tryAgainBtn.classList.add("try-again-button");
     document.body.appendChild(tryAgainBtn);
     tryAgainBtn.addEventListener("click", () => {
-      document.body.innerHTML = "";
-      init();
-      startGame();
+      restartGame();
     });
   }
 
+  stop() {
+    clearInterval(this.gameLoop);
+    clearInterval(this.enemyLoop);
+    clearInterval(this.winAnimationInterval); // <--- wichtig
+    const winImg = document.querySelector(".win-screen-image");
+    if (winImg) winImg.remove();
+    if (this.level && this.level.enemies) {
+      this.level.enemies = [];
+    }
+    if (this.backgroundMusic) {
+      this.backgroundMusic.pause();
+      this.backgroundMusic.currentTime = 0;
+    }
+  }
+
   /**
-     * Triggers the win screen sequence if it has not already been shown.
+   * Triggers the win screen sequence if it has not already been shown.
    * This includes playing the win music, displaying the win animation,
    * and showing the "Try Again" button.
    *
@@ -364,6 +391,7 @@ class World {
   triggerWinScreen() {
     if (this.endScreenShown) return;
     this.endScreenShown = true;
+    this.character.stopAllLoops();
     this.winMusic.play();
     this.showWinAnimation();
     this.showTryAgainButton();
@@ -378,6 +406,18 @@ class World {
    *
    * @method
    */
+  // showWinAnimation() {
+  //   const winImg = document.createElement("img");
+  //   winImg.classList.add("win-screen-image");
+  //   document.body.appendChild(winImg);
+  //   let frame = 0;
+  //   setInterval(() => {
+  //     winImg.src = this.IMAGES_WIN_ANIMATION[frame];
+  //     frame++;
+  //     if (frame >= this.IMAGES_WIN_ANIMATION.length) frame = 0;
+  //   }, 150);
+  // }
+
   showWinAnimation() {
     const winImg = document.createElement("img");
     winImg.classList.add("win-screen-image");
@@ -390,18 +430,18 @@ class World {
     }, 150);
   }
 
-  /**
-   * Creates and displays a "Try Again" button on the screen.
-   * The button is styled with a CSS class for positioning and visuals.
-   * When clicked, the button triggers a page reload to restart the game.
-   */
-  showTryAgainButton() {
-    const tryAgainBtn = document.createElement("img");
-    tryAgainBtn.src = this.IMAGES_TRAY_AGAIN[0];
-    tryAgainBtn.classList.add("try-again-button");
-    document.body.appendChild(tryAgainBtn);
-    tryAgainBtn.addEventListener("click", () => location.reload());
-  }
+  // /**
+  //  * Creates and displays a "Try Again" button on the screen.
+  //  * The button is styled with a CSS class for positioning and visuals.
+  //  * When clicked, the button triggers a page reload to restart the game.
+  //  */
+  // showTryAgainButton() {
+  //   const tryAgainBtn = document.createElement("img");
+  //   tryAgainBtn.src = this.IMAGES_TRAY_AGAIN[0];
+  //   tryAgainBtn.classList.add("try-again-button");
+  //   document.body.appendChild(tryAgainBtn);
+  //   tryAgainBtn.addEventListener("click", () => location.reload());
+  // }
 
   /**
    * Initializes the background music for the game.

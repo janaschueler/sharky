@@ -1,6 +1,6 @@
 /**
  * Represents a Jellyfish enemy in the game.
- * Inherits from MovableObjects and includes different animation states 
+ * Inherits from MovableObjects and includes different animation states
  * for swimming, transforming, attacking, and dying.
  *
  * Features:
@@ -30,7 +30,7 @@ class Jellyfish extends MovableObjects {
    * Represents a Jellyfish entity in the game.
    * Initializes the Jellyfish with random position, loads images for different states,
    * and starts its movement and animation.
-   * 
+   *
    * @constructor
    * @extends SomeParentClass
    */
@@ -46,48 +46,47 @@ class Jellyfish extends MovableObjects {
     this.animate();
   }
 
-/**
- * Starts the animation loop and floating behavior of the jellyfish.
- */
-animate() {
-  this.startBehaviorLoop();
-  this.startFloatingOnDeath();
-}
+  /**
+   * Starts the animation loop and floating behavior of the jellyfish.
+   */
+  animate() {
+    this.startBehaviorLoop();
+    this.startFloatingOnDeath();
+  }
 
-/**
- * Handles the animation state based on proximity and life status.
- */
-startBehaviorLoop() {
-  setInterval(() => {
-    if (this.dead) {
-      this.playAnimation(this.IMAGES_DEAD);
-    } else if (this.isInProximity()) {
-      if (!this.isTransitioning && !this.isAttacking) {
-        this.startTransition();
+  /**
+   * Handles the animation state based on proximity and life status.
+   */
+  startBehaviorLoop() {
+    setInterval(() => {
+      if (this.dead) {
+        this.playAnimation(this.IMAGES_DEAD);
+      } else if (this.isInProximity()) {
+        if (!this.isTransitioning && !this.isAttacking) {
+          this.startTransition();
+        }
+      } else {
+        this.playAnimation(this.IMAGES_SWIM);
       }
-    } else {
-      this.playAnimation(this.IMAGES_SWIM);
-    }
-  }, 200);
-}
+    }, 200);
+  }
 
-/**
- * Moves the jellyfish upward after death until it leaves the screen.
- * Marks it for removal when it's no longer visible.
- */
-startFloatingOnDeath() {
-  setInterval(() => {
-    if (this.dead && !this.hasStartedFloating) {
-      this.hasStartedFloating = true;
-    } else if (this.hasStartedFloating) {
-      this.y -= this.speed * 2;
-      if (this.y + this.height < 0) {
-        this.markedForRemoval = true;
+  /**
+   * Moves the jellyfish upward after death until it leaves the screen.
+   * Marks it for removal when it's no longer visible.
+   */
+  startFloatingOnDeath() {
+    setInterval(() => {
+      if (this.dead && !this.hasStartedFloating) {
+        this.hasStartedFloating = true;
+      } else if (this.hasStartedFloating) {
+        this.y -= this.speed * 2;
+        if (this.y + this.height < 0) {
+          this.markedForRemoval = true;
+        }
       }
-    }
-  }, 1000 / 60);
-}
-
+    }, 1000 / 60);
+  }
 
   /**
    * Handles the reaction of the jellyfish when it is hit.

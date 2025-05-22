@@ -1,4 +1,7 @@
 class SharkyAttack {
+  lastPoisonAttackTime = 0;
+  poisonAttackCoolDown = 1500; // 1,5 Sekunden Cooldown z.B.
+
   constructor(sharky) {
     this.sharky = sharky;
     this.world = sharky.world; // Welt von Sharky übernehmen
@@ -146,13 +149,23 @@ class SharkyAttack {
    * @param {Object} boss - The boss object that the poison attack is targeting.
    * @returns {boolean} - Returns `true` if the poison attack was successfully executed, otherwise `false`.
    */
-
   handlePoisonAttack(boss) {
+    const now = Date.now();
+    if (now - this.lastPoisonAttackTime < this.poisonAttackCoolDown) {
+      return false;
+    }
     if (this.world.poison <= 0) {
       this.sharky.playSound(this.AUDIO_NO_POISON);
       this.isAttackingAnimation = false;
       return false;
     }
+    return this.statPoisonAttack(now);
+  }
+
+  statPoisonAttack(now) {
+    this.lastPoisonAttackTime = now;
+    this.world.poison = Math.max(0, this.world.poison - 1);
+    this.world.statusBarPoison.storePoison(this.world.poison);
     this.sharky.playAnimationOnce(this.sharky.IMAGES_ATTACK_BUBBLE_POISON, () => {
       this.isAttackingAnimation = false;
     });
@@ -174,6 +187,13 @@ class SharkyAttack {
       this.world.poison--;
       this.world.statusBarPoison.storePoison(this.world.poison);
     }
+  }
+
+  playSound(audio) {
+    if (!audio) return;
+    audio.pause();
+    audio.currentTime = 0;
+    audio.play();
   }
 }
 

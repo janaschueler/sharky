@@ -266,4 +266,14 @@ class Boss extends MovableObjects {
       this.currentImage = 0;
     }
   }
+
+  /**
+   * Stops and resets all boss-related audio.
+   */
+  stopSounds() {
+    this.stopSound("attack", this.AUDIO_ATTACK);
+    if (this.AUDIO_ATTACK) {
+      this.AUDIO_ATTACK.muted = true; // optional zur Sicherheit
+    }
+  }
 }

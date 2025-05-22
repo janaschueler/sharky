@@ -5,7 +5,6 @@
  * types of collisions, separated by object types.
  */
 class CollisionDetector {
-              
   /**
    * Initializes a new instance of the CollisionDetector.
    *
@@ -22,6 +21,7 @@ class CollisionDetector {
    * and the status bar is updated to reflect the character's remaining energy.
    */
   checkEnemyCollisions() {
+    if (this.world.character.isDead) return;
     const allEnemies = [...this.world.level.enemies];
     if (this.world.coins >= 2) {
       allEnemies.push(this.world.boss);
@@ -85,9 +85,7 @@ class CollisionDetector {
   checkBubbleCollisions(bubbles, enemies, boss) {
     const allEnemies = [...enemies];
     if (boss) allEnemies.push(boss);
-
     const bubblesToRemove = [];
-
     bubbles.forEach((bubble, index) => {
       allEnemies.forEach((enemy) => {
         if (enemy instanceof Jellyfish) {
@@ -98,7 +96,6 @@ class CollisionDetector {
         }
       });
     });
-
     this.removeBubbles(bubbles, bubblesToRemove);
   }
 
@@ -118,6 +115,26 @@ class CollisionDetector {
       bubble.clearExistingMovement();
       bubblesToRemove.push(index);
     }
+  }
+
+  /**
+   * Checks if the character performs a "fin attack" on any Puffers enemies when the SPACE key is pressed.
+   * Iterates through all enemies in the current level, and for each enemy that is an instance of Puffers,
+   * verifies if the character is in front of and colliding with the enemy. If so, triggers the enemy's
+   * reaction to being hit and plays the hurt sound if available.
+   *
+   * @returns {void}
+   */
+  checkFinAttackOnPuffers() {
+    if (!this.world.keyboard.SPACE) return;
+    this.world.level.enemies.forEach((enemy) => {
+      if (enemy instanceof Puffers && this.world.character.isInFront(enemy) && this.world.character.isColliding(enemy)) {
+        enemy.reactToHit();
+        if (enemy.playSoundHurt) {
+          enemy.playSoundHurt();
+        }
+      }
+    });
   }
 
   /**
@@ -150,4 +167,3 @@ class CollisionDetector {
     });
   }
 }
-

@@ -1,38 +1,13 @@
 // prettier-ignore
-/**
- * Represents the configuration for level 1 in the game.
- *
- * @constant
- * @type {Level}
- *
- * @param {Array<Object>} enemies - The array of enemy objects in the level.
- * @param {Array<Object>} lights - The array of light objects in the level.
- * @param {Array<BackgroundObject>} backgroundObjects - The array of background objects for the level.
- * @param {Array<Object>} collectibles - The array of collectible objects (e.g., coins, poison) in the level.
- *
- * Enemies:
- * - Puffers: Repeated instances of the Puffer enemy.
- * - Jellyfish: Repeated instances of the Jellyfish enemy.
- *
- * Lights:
- * - Light: A single light object.
- *
- * Background Objects:
- * - Includes multiple layers of background images (Water, Fondo 2, Fondo 1, Floor) at different positions (-1440, 0, 1440).
- *
- * Collectibles:
- * - Coin: Repeated instances of collectible coins.
- * - Poison: Repeated instances of collectible poison items.
- */
-const level1 = new Level(
+function createLevel1() {
+  return new Level(
     [
       new Puffers(),
       new Jellyfish(),
       new Puffers(),
       new Jellyfish(),
       new Puffers(),
-      new Jellyfish()
-
+      new Jellyfish(),
     ],
     [new Light()],
     [
@@ -60,5 +35,6 @@ const level1 = new Level(
       new Poison(),
       new Coin(),
       new Poison(),
-    ],
+    ]
   );
+}

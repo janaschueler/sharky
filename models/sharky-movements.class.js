@@ -11,14 +11,6 @@ class SharkyMovements {
   }
 
   /**
-   * Interrupts sleep and triggers the swimming animation.
-   */
-  commenceSwim() {
-    this.sharky.interruptSleep();
-    this.sharky.handleSwim();
-  }
-
-  /**
    * Checks if an attack key (SPACE or D) is currently pressed.
    * @param {Object} k - The keyboard input state.
    * @returns {boolean} True if an attack key is pressed.
@@ -40,13 +32,14 @@ class SharkyMovements {
    */
   anyKeyPressMethod() {
     this.sharky.stopSound("sleep", this.sharky.AUDIO_SLEEP);
-    this.sharky.resetSleep();
+    this.sharky.interruptSleep();
   }
 
   /**
    * Moves the sharky down and to the left, simulating a diagonal swim motion.
    */
   swimDownLeftMethod() {
+    this.sharky.interruptSleep();
     this.sharky.x -= this.sharky.speed / 3;
     this.sharky.y += this.sharky.speed / 1.2;
     this.sharky.swimDown = true;
@@ -57,6 +50,7 @@ class SharkyMovements {
    * Moves the sharky down and to the right, simulating a diagonal swim motion.
    */
   swimDownRightMethod() {
+    this.sharky.interruptSleep();
     this.sharky.x += this.sharky.speed / 3;
     this.sharky.y += this.sharky.speed / 1.2;
     this.sharky.swimDown = true;
@@ -67,6 +61,7 @@ class SharkyMovements {
    * Moves the sharky up and to the left, simulating a diagonal swim motion.
    */
   swimUpLeftMethod() {
+    this.sharky.interruptSleep();
     this.sharky.x -= this.sharky.speed / 3;
     this.sharky.y -= this.sharky.speed / 1.2;
     this.sharky.swimUp = true;
@@ -77,6 +72,7 @@ class SharkyMovements {
    * Moves the sharky up and to the right, simulating a diagonal swim motion.
    */
   swimUpRightMethod() {
+    this.sharky.interruptSleep();
     this.sharky.x += this.sharky.speed / 3;
     this.sharky.y -= this.sharky.speed / 1.2;
     this.sharky.swimUp = true;
@@ -87,6 +83,7 @@ class SharkyMovements {
    * Moves the sharky directly to the left and sets direction state.
    */
   swimLeftMethod() {
+    this.sharky.interruptSleep();
     this.sharky.x -= this.sharky.speed;
     this.sharky.otherDirection = true;
   }
@@ -95,6 +92,7 @@ class SharkyMovements {
    * Moves the sharky directly to the right and resets vertical movement flags.
    */
   swimRightMethod() {
+    this.sharky.interruptSleep();
     this.sharky.x += this.sharky.speed;
     this.sharky.otherDirection = false;
     this.sharky.swimUp = false;
@@ -134,13 +132,7 @@ class SharkyMovements {
    * @returns {boolean} True if movement up-right is possible.
    */
   swimUpRight(k) {
-    return (
-      k.UP &&
-      this.sharky.otherDirection === false &&
-      this.sharky.x > -1300 &&
-      this.sharky.x < this.world.level.level_end_x &&
-      this.sharky.y > -80
-    );
+    return k.UP && this.sharky.otherDirection === false && this.sharky.x > -1300 && this.sharky.x < this.world.level.level_end_x && this.sharky.y > -80;
   }
 
   /**
@@ -149,13 +141,7 @@ class SharkyMovements {
    * @returns {boolean} True if movement up-left is possible.
    */
   swimUpLeft(k) {
-    return (
-      k.UP &&
-      this.sharky.otherDirection === true &&
-      this.sharky.x > -1300 &&
-      this.sharky.x < 2000 &&
-      this.sharky.y > -80
-    );
+    return k.UP && this.sharky.otherDirection === true && this.sharky.x > -1300 && this.sharky.x < 2000 && this.sharky.y > -80;
   }
 
   /**
@@ -164,13 +150,7 @@ class SharkyMovements {
    * @returns {boolean} True if movement down-right is possible.
    */
   swimDownRight(k) {
-    return (
-      k.DOWN &&
-      this.sharky.otherDirection === false &&
-      this.sharky.x > -1300 &&
-      this.sharky.x < this.world.level.level_end_x &&
-      this.sharky.y < 300
-    );
+    return k.DOWN && this.sharky.otherDirection === false && this.sharky.x > -1300 && this.sharky.x < this.world.level.level_end_x && this.sharky.y < 300;
   }
 
   /**
@@ -179,12 +159,6 @@ class SharkyMovements {
    * @returns {boolean} True if movement down-left is possible.
    */
   swimDownLeft(k) {
-    return (
-      k.DOWN &&
-      this.sharky.otherDirection === true &&
-      this.sharky.x > -1300 &&
-      this.sharky.x < 2000 &&
-      this.sharky.y < 300
-    );
+    return k.DOWN && this.sharky.otherDirection === true && this.sharky.x > -1300 && this.sharky.x < 2000 && this.sharky.y < 300;
   }
 }

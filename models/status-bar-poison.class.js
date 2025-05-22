@@ -8,7 +8,7 @@ class StatusBarPoison extends DrawableObject {
 
   /**
    * Creates an instance of the status bar for poison.
-   * Initializes the poison status bar with default properties, including position, size, 
+   * Initializes the poison status bar with default properties, including position, size,
    * and loading the poison images. Also sets the initial poison value to 0.
    */
   constructor() {
@@ -28,14 +28,8 @@ class StatusBarPoison extends DrawableObject {
    * @param {number} amount - The amount of poison to store. Should be a number between 0 and 5.
    */
   storePoison(amount) {
-    let imagePath;
-    if (amount > 5) {
-      imagePath = this.IMAGES_POISON[5];
-    } else {
-      this.unitsPoison = amount;
-      let index = Math.round(amount);
-      imagePath = this.IMAGES_POISON[index];
-    }
-    this.img = this.imageCache[imagePath];
+    amount = Math.max(0, Math.min(5, Math.round(amount)));
+    this.unitsPoison = amount;
+    this.img = this.imageCache[this.IMAGES_POISON[amount]];
   }
 }
