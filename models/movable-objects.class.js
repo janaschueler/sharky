@@ -76,7 +76,7 @@ class MovableObjects extends DrawableObject {
         this.currentlyPlayingOnce = false;
         if (callback) callback();
       }
-    }, 200);
+    }, 100);
   }
 
   /**
@@ -245,15 +245,14 @@ class MovableObjects extends DrawableObject {
     return thisRight >= objLeft && thisRight <= objLeft + 10 && thisBottom >= objTop && thisTop <= objBottom;
   }
 
-
   /**
    * Handles the logic when the object is hit.
-   * 
+   *
    * - Reduces energy by 20 if the object is not dead, has energy, and is not attacking.
    * - Ensures that hits can only occur at least 1 second apart.
    * - Does not allow energy to drop below 0.
    * - Updates the last hit timestamp.
-   * 
+   *
    * @returns {boolean|undefined} Returns false if the object is dead or has no energy, otherwise undefined.
    */
   hit() {

@@ -1,4 +1,14 @@
 // prettier-ignore
+/**
+ * Creates and returns the configuration for level 1 of the game.
+ *
+ * @function
+ * @returns {Level} A new Level instance configured with:
+ *   - Enemies: Alternating Puffers and Jellyfish.
+ *   - Lights: A single Light object.
+ *   - Background: Multiple BackgroundObject instances for parallax effect.
+ *   - Collectibles: Alternating Coin and Poison objects.
+ */
 function createLevel1() {
   return new Level(
     [
@@ -34,6 +44,11 @@ function createLevel1() {
       new Coin(),
       new Poison(),
       new Coin(),
+      new Poison(),
+      new Poison(),
+      new Poison(),
+      new Poison(),
+      new Poison(),
       new Poison(),
     ]
   );

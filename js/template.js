@@ -1,3 +1,11 @@
+/**
+ * Rebuilds the main game container by injecting the necessary HTML structure for the game interface.
+ * This includes navigation buttons, the game canvas, mobile joystick controls, an instructions overlay,
+ * and the start screen. Existing content within the container is replaced.
+ *
+ * @function
+ * @returns {void}
+ */
 function rebuildGameContainer() {
   const container = document.querySelector(".game-container");
   container.innerHTML = `

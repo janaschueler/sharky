@@ -71,7 +71,7 @@ canvas {
   background-color: rgba(0, 0, 0, 0.8);
 }
 
-#start-screen{
+#start-screen {
   position: absolute;
   inset: 0;
   display: flex;
@@ -144,7 +144,7 @@ canvas {
 .mobileJoystick {
   display: none;
   position: absolute;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
   bottom: 0%;
   left: 50%;
@@ -264,7 +264,28 @@ canvas {
   z-index: 1001;
 }
 
-@media only screen and (max-width: 1024px) {
+#rotate-device-overlay {
+  display: flex;
+  flex-direction: column;
+}
+
+a {
+  color: white;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+a:hover {
+  color: rgb(33, 125, 174);
+  cursor: pointer;
+}
+
+.linkImpressum {
+  margin-top: 32px;
+  color: black!;
+}
+
+@media (hover: none) and (pointer: coarse) {
   .mobileJoystick {
     display: flex;
   }
@@ -302,6 +323,9 @@ canvas {
 }
 
 @media only screen and (max-height: 600px) {
+  .linkImpressum {
+    display: none;
+  }
   h1 {
     display: none;
   }

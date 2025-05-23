@@ -19,7 +19,6 @@
  * @property {number} finSlapCooldown - Cooldown time for the fin slap attack in milliseconds.
  * @property {number} lastAttackTime - Timestamp of the last attack performed.
  * @property {number} attackCooldown - Cooldown time for attacks in milliseconds.
- * @property {boolean} sleeping - Indicates whether the shark is in a sleeping state.
  * @property {boolean} isAttackingAnimation - Indicates whether an attack animation is currently playing.
  * @property {string[]} IMAGES_HOVER - Array of image paths for the hover animation.
  * @property {string[]} IMAGES_FALLING_A_SLEEP - Array of image paths for the falling asleep animation.
@@ -69,7 +68,6 @@ class Sharky extends MovableObjects {
   finSlapCooldown = 500;
   lastAttackTime = 0;
   attackCooldown = 1000; // 1 Sekunde Cooldown
-  sleeping = false;
   isAttackingAnimation = false;
   hasWon = false;
   IMAGES_HOVER = ["img/1.Sharkie/1.IDLE/1.png", "img/1.Sharkie/1.IDLE/2.png", "img/1.Sharkie/1.IDLE/3.png", "img/1.Sharkie/1.IDLE/4.png", "img/1.Sharkie/1.IDLE/5.png", "img/1.Sharkie/1.IDLE/6.png", "img/1.Sharkie/1.IDLE/7.png", "img/1.Sharkie/1.IDLE/8.png", "img/1.Sharkie/1.IDLE/9.png", "img/1.Sharkie/1.IDLE/10.png", "img/1.Sharkie/1.IDLE/11.png", "img/1.Sharkie/1.IDLE/12.png", "img/1.Sharkie/1.IDLE/13.png", "img/1.Sharkie/1.IDLE/14.png", "img/1.Sharkie/1.IDLE/15.png", "img/1.Sharkie/1.IDLE/16.png", "img/1.Sharkie/1.IDLE/17.png", "img/1.Sharkie/1.IDLE/18.png"];
@@ -141,7 +139,7 @@ class Sharky extends MovableObjects {
       if (this.energy <= 0 || this.hasWon) return;
       if (this.movementHandler.anyKeyPress(k)) this.movementHandler.anyKeyPressMethod();
       if (this.movementHandler.swimRight(k)) this.movementHandler.swimRightMethod();
-      if (this.movementHandler.simLeft(k)) this.movementHandler.swimLeftMethod();
+      if (this.movementHandler.swimLeft(k)) this.movementHandler.swimLeftMethod();
       if (this.movementHandler.swimUpRight(k)) this.movementHandler.swimUpRightMethod();
       if (this.movementHandler.swimUpLeft(k)) this.movementHandler.swimUpLeftMethod();
       if (this.movementHandler.swimDownRight(k)) this.movementHandler.swimDownRightMethod();
@@ -171,15 +169,19 @@ class Sharky extends MovableObjects {
   startBehaviorLoop() {
     setInterval(() => {
       const now = Date.now();
-      this.isSleeping = now - this.lastActionTime > 15000 && !this.isDead;
+      const shouldSleep = now - this.lastActionTime > 15000 && !this.isDead && !this.isSleeping && !this.fallingAsleepStarted;
+      if (shouldSleep) {
+        this.fallingAsleep();
+      }
       if (this.energy <= 0 && !this.hasPlayedDeathAnimation) {
         this.playDeathAnimation();
         return;
       }
       if (this.isDead || this.hasWon) return;
       if (!this.isDead && this.isHurt()) return this.commenceHurtAnimation();
-      if (this.isSleeping && !this.isDead && !this.isHurt()) this.fallingAsleep();
-      else if (this.isIdle() && !this.isDead && !this.isHurt()) this.commenceHover();
+      if (this.isSleeping && !this.isDead && !this.isHurt()) {
+        this.fallingAsleep();
+      } else if (this.isIdle() && !this.isDead && !this.isHurt()) this.commenceHover();
       else this.commenceSwim();
     }, 200);
   }
@@ -191,7 +193,6 @@ class Sharky extends MovableObjects {
    * @returns {void}
    */
   commenceHover() {
-    this.interruptSleep();
     this.handleIdle();
   }
 
@@ -199,7 +200,7 @@ class Sharky extends MovableObjects {
    * Initiates the hurt animation for the sharky character.
    * Determines the appropriate hurt animation based on the source of damage (Jellyfish or poison),
    * interrupts any ongoing sleep state, and plays the corresponding animation.
-   * Also ensures the character is not marked as sleeping.
+   * Also ensures the character is not marked as isSleeping.
    *
    * @returns {void}
    */
@@ -207,7 +208,7 @@ class Sharky extends MovableObjects {
     this.interruptSleep();
     const hurtImages = this.lastHurtBy instanceof Jellyfish ? this.IMAGES_HURT_ELECTRIC : this.IMAGES_HURT_POISON;
     this.playAnimation(hurtImages);
-    this.sleeping = false;
+    this.isSleeping = false;
     return;
   }
 
@@ -229,13 +230,13 @@ class Sharky extends MovableObjects {
    * @memberof Sharky
    */
   playDeathAnimation() {
-    this.interruptSleep(); 
-    this.stopAllAnimations(); 
+    this.interruptSleep();
+    this.stopAllAnimations();
     if (this.hasPlayedDeathAnimation) return;
     const deathImages = this.lastHurtBy instanceof Jellyfish ? this.IMAGES_DEAD_ELECTROSHOCK : this.IMAGES_DEAD;
     this.hasPlayedDeathAnimation = true;
     this.isDead = true;
-    this.sleeping = false;
+    this.isSleeping = false;
     this.playAnimationOnce(deathImages, () => {
       this.startFloatingAfterDeath();
       this.triggerGameOver(deathImages);
@@ -245,15 +246,15 @@ class Sharky extends MovableObjects {
   /**
    * Stops all ongoing animations for the Sharky instance.
    * Clears any active animation intervals and resets the animation state.
-   * 
+   *
    * - Stops the ping-pong animation interval if active.
    * - Stops the main animation interval if active.
    * - Resets the world's `currentlyPlayingOnce` flag to false.
    */
   stopAllAnimations() {
-    clearInterval(this.pingPongInterval); // falls Sleep
-    clearInterval(this.animationInterval); // falls vorhanden
-    this.world.currentlyPlayingOnce = false; // falls verwendet
+    clearInterval(this.pingPongInterval);
+    clearInterval(this.animationInterval);
+    this.world.currentlyPlayingOnce = false;
   }
 
   /**
@@ -267,7 +268,7 @@ class Sharky extends MovableObjects {
       if (this.y < 280) {
         this.y += 1.5;
       } else {
-        clearInterval(this.floatInterval); // beendet Bewegung
+        clearInterval(this.floatInterval);
       }
     }, 1000 / 60); // 60 FPS
   }
@@ -280,29 +281,28 @@ class Sharky extends MovableObjects {
    */
   triggerGameOver(deathImages) {
     this.img = this.imageCache[deathImages[deathImages.length - 1]];
-    if (!this.world.gameOverShown) {
-      this.world.gameOverShown = true;
-      this.world.triggerGameOverScreen();
+    if (!this.world.endGame.gameOverShown) {
+      // this.world.gameOverShown = true;
+      this.world.endGame.triggerGameOverScreen();
     }
   }
 
   /**
    * Initiates the process of the shark falling asleep.
-   * Sets the `fallingAsleepStarted` and `sleeping` flags to `true`.
+   * Sets the `fallingAsleepStarted` and `isSleeping` flags to `true`.
    * Plays the falling asleep animation once, and upon completion,
-   * starts a ping-pong animation for sleeping and loops a sleeping sound.
+   * starts a ping-pong animation for isSleeping and loops a sleeping sound.
    */
   fallingAsleep() {
     if (this.isDead || this.hasWon || this.fallingAsleepStarted) return;
     this.fallingAsleepStarted = true;
-    this.sleeping = true;
-    if (this.sleeping) {
-      this.playAnimationOnce(this.IMAGES_FALLING_A_SLEEP, () => {
-        if (this.isDead) return;
-        this.playPingPongAnimation(this.IMAGES_SLEEP);
-        this.playLoopedSound("sleep", this.AUDIO_SLEEP);
-      });
-    }
+
+    this.playAnimationOnce(this.IMAGES_FALLING_A_SLEEP, () => {
+      if (this.isDead) return;
+      this.isSleeping = true;
+      this.playPingPongAnimation(this.IMAGES_SLEEP);
+      this.playLoopedSound("sleep", this.AUDIO_SLEEP);
+    });
   }
 
   /**
@@ -356,8 +356,8 @@ class Sharky extends MovableObjects {
    * @method
    */
   setAudioVolumes() {
-    this.AUDIO_BUBBLE.volume = 1;
-    this.AUDIO_FIN_SLAP.volume = 1;
+    this.AUDIO_BUBBLE.volume = 0.05;
+    this.AUDIO_FIN_SLAP.volume = 0.3;
     this.AUDIO_SLEEP.volume = 0.2;
     this.AUDIO_NO_POISON.volume = 1;
   }
@@ -365,19 +365,21 @@ class Sharky extends MovableObjects {
   /**
    * Interrupts the sleep state of the object.
    * If the object is currently sleeping, this method will:
-   * - Set the `sleeping` state to `false`.
+   * - Set the `isSleeping` state to `false`.
    * - Reset the `fallingAsleepStarted` flag.
    * - Clear the interval associated with the `pingPongInterval`.
    * - Stop the "sleep" sound using the provided audio reference.
    * - Reset the sleep-related properties of the object.
    */
   interruptSleep() {
-    if (this.sleeping) {
-      this.sleeping = false;
+    this.resetSleep();
+
+    if (this.isSleeping || this.fallingAsleepStarted) {
+      this.isSleeping = false;
       this.fallingAsleepStarted = false;
       clearInterval(this.pingPongInterval);
       this.stopSound("sleep", this.AUDIO_SLEEP);
-      this.resetSleep();
+      this.stopAllAnimations();
     }
   }
 
@@ -393,5 +395,18 @@ class Sharky extends MovableObjects {
     this.stopSound("bubble", this.AUDIO_BUBBLE);
     this.stopSound("fin-slap", this.AUDIO_FIN_SLAP);
     this.stopSound("sleep", this.AUDIO_SLEEP);
+  }
+
+  /**
+   * Plays the provided audio element from the beginning.
+   * If the audio is already playing, it will be paused and reset before playing again.
+   *
+   * @param {HTMLAudioElement} audio - The audio element to play. If falsy, the function does nothing.
+   */
+  playSound(audio) {
+    if (!audio) return;
+    audio.pause();
+    audio.currentTime = 0;
+    audio.play();
   }
 }

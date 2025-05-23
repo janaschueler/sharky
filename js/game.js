@@ -1,13 +1,14 @@
 let world;
 let canvas;
 let keyboard = new Keyboard();
-let isMuted = false;
+let isMuted = true;
 const buttonToKey = {
   moveLeftBtn: "ArrowLeft",
   moveRightBtn: "ArrowRight",
   moveUpBtn: "ArrowUp",
   moveDownBtn: "ArrowDown",
   attackBtn: "Space",
+  bubbleAttackBtn: "KeyD",
 };
 
 /**
@@ -16,6 +17,13 @@ const buttonToKey = {
  */
 function init() {
   canvas = document.getElementById("canvas");
+
+  const storedMute = localStorage.getItem("isMuted");
+  if (storedMute !== null) {
+    isMuted = storedMute === "true";
+  }
+  const icon = document.querySelector("#sound-btn img");
+  icon.src = isMuted ? "img/icon/volume-xmark-solid.svg" : "img/icon/volume-high-solid.svg";
   setupStartButton();
 }
 
@@ -26,6 +34,7 @@ function init() {
 function setupStartButton() {
   document.getElementById("start-btn").style.display = "block";
   document.getElementById("start-btn").addEventListener("click", startGame, { once: true });
+  document.querySelector("#sound-btn img").src = "img/icon/volume-xmark-solid.svg";
 }
 
 /**
@@ -40,6 +49,10 @@ function startGame() {
   const container = document.querySelector(".game-container");
   const displaySize = canvas.getBoundingClientRect();
   world = new World(canvas, keyboard, displaySize.width, displaySize.height);
+
+  setMuteState(isMuted);
+  const icon = document.querySelector("#sound-btn img");
+  icon.src = isMuted ? "img/icon/volume-xmark-solid.svg" : "img/icon/volume-high-solid.svg";
 }
 
 window.addEventListener("load", checkOrientation);
@@ -90,6 +103,7 @@ function toggleIcon(event) {
   const icon = document.querySelector("#sound-btn img");
   const newMuteState = !isMuted;
   icon.src = newMuteState ? "img/icon/volume-xmark-solid.svg" : "img/icon/volume-high-solid.svg";
+  localStorage.setItem("isMuted", newMuteState ? "true" : "false");
   if (world) {
     setMuteState(newMuteState);
   } else {
@@ -233,14 +247,24 @@ function restartGame() {
   stopAllSoundsTemporarily();
   world = null;
   const wasMuted = isMuted;
-  const tryAgainBtn = document.querySelector(".try-again-button");
-  if (tryAgainBtn) tryAgainBtn.remove();
-  const gameOverImg = document.querySelector(".game-over-image");
-  if (gameOverImg) gameOverImg.remove();
+  restartAnimation();
   summaryRestart();
   if (wasMuted) {
     isMuted = true;
     toggleIcon(new Event("click"));
+  }
+
+  /**
+   * Removes the "Try Again" button, "Game Over" image, and "Win Screen" image elements
+   * from the DOM if they exist, effectively resetting the end-of-game UI state.
+   */
+  function restartAnimation() {
+    const tryAgainBtn = document.querySelector(".try-again-button");
+    if (tryAgainBtn) tryAgainBtn.remove();
+    const gameOverImg = document.querySelector(".game-over-image");
+    if (gameOverImg) gameOverImg.remove();
+    const winImg = document.querySelector(".win-screen-image");
+    if (winImg) winImg.remove();
   }
 }
 
@@ -287,5 +311,14 @@ function bindSoundButton() {
   if (soundBtn) {
     soundBtn.addEventListener("click", toggleIcon);
     soundBtn.addEventListener("keydown", toggleIcon);
+  }
+
+  /**
+   * Shows the on-screen mobile joystick if the device supports touch events.
+   * This enhances usability for mobile and tablet users by displaying
+   * the joystick controls only on touch-capable devices.
+   */
+  if ("ontouchstart" in window || navigator.maxTouchPoints > 0) {
+    document.querySelector(".mobileJoystick").style.display = "flex";
   }
 }

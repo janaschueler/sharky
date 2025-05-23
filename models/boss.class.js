@@ -74,6 +74,7 @@ class Boss extends MovableObjects {
     this.loadImage(this.IMAGES_INTRO[0]);
     this.img = this.imageCache[this.IMAGES_INTRO[0]];
     this.x = 2100;
+    this.AUDIO_ATTACK.volume = 0.3;
   }
 
   /**

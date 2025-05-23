@@ -14,6 +14,9 @@
 
     <div id="rotate-device-overlay">
       <p>Please rotate your device to landscape mode</p>
+      <p>
+        <a href="impressum.html" target="_blank">Impressum</a>
+      </p>
     </div>
 
     <div class="game-container" id="fullscreen">
@@ -32,16 +35,19 @@
           <button id="moveRightBtn">
             <img src="img/icon/arrow-right-solid.svg" alt="right button" />
           </button>
+          <button id="attackBtn">
+            <img src="img/icon/burst-solid.svg" alt="attack button" />
+          </button>
         </div>
-        <button id="attackBtn">
-          <img src="img/icon/burst-solid.svg" alt="attack button" />
-        </button>
         <div class="joyStickUnit">
           <button id="moveUpBtn">
             <img src="img/icon/arrow-up-solid.svg" alt="up button" />
           </button>
           <button id="moveDownBtn">
             <img src="img/icon/arrow-down-solid.svg" alt="down button" />
+          </button>
+          <button id="bubbleAttackBtn">
+            <img src="img/icon/circle-regular.svg" alt="extra button" />
           </button>
         </div>
       </div>
@@ -57,6 +63,11 @@
         <img id="start-btn" src="img/6.Botones/Start/1.png" />
       </div>
     </div>
+    <footer class="footer">
+      <p class="linkImpressum">
+        <a href="impressum.html" target="_blank">Impressum</a>
+      </p>
+    </footer>
   </body>
 
   <script src="./models/drawable-object.class.js"></script>
@@ -79,6 +90,7 @@
   <script src="./models/level.class.js"></script>
   <script src="./levels/level1.js"></script>
   <script src="./models/collisionDetector.class.js"></script>
+  <script src="./models/endgame.class.js"></script>
   <script src="./models/world.class.js"></script>
   <script src="./js/template.js"></script>
   <script src="./js/sound-control.js"></script>

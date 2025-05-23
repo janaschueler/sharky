@@ -27,6 +27,16 @@ class ThrowableObject extends MovableObjects {
     this.initBubble();
   }
 
+  /**
+   * Initializes the bubble object with the appropriate images, animation, and behavior
+   * based on whether it is a poison bubble or a regular bubble. Sets the initial image,
+   * loads the animation frames, starts the animation, and applies any special effects
+   * (such as reducing poison level). Determines the throw direction and adds the bubble
+   * to the world's list of throwable objects.
+   *
+   * @method
+   * @returns {void}
+   */
   initBubble() {
     if (this.isPoison) {
       this.loadImage(this.IMAGES_BUBBLE_POISON[0]);
@@ -46,24 +56,45 @@ class ThrowableObject extends MovableObjects {
     this.world.throwableObjects.push(this);
   }
 
+  /**
+   * Throws the object to the right by clearing any existing movement interval
+   * and applying gravity with a rightward force.
+   * 
+   * @method
+   * @returns {void}
+   */
   throwRight() {
     if (this.moveInterval) clearInterval(this.moveInterval);
     this.applyGravity(1);
   }
 
+  /**
+   * Throws the object to the left by clearing any existing movement interval
+   * and applying gravity in the leftward direction.
+   */
   throwLeft() {
     if (this.moveInterval) clearInterval(this.moveInterval);
     this.applyGravity(-1);
   }
 
+  /**
+   * Clears any existing movement interval for the object.
+   * If a movement interval is currently active, it will be stopped and set to null.
+   */
   clearExistingMovement() {
     if (this.moveInterval) clearInterval(this.moveInterval);
     this.moveInterval = null;
   }
 
+  /**
+   * Reduces the poison level in the world's poison status bar by one unit if it is above zero,
+   * and updates the status bar accordingly.
+   *
+   * @method
+   * @returns {void}
+   */
   reducePoisonLevel() {
     const poisonBar = this.world.statusBarPoison;
-
     if (poisonBar.poison > 0) {
       poisonBar.poison--;
       poisonBar.update();

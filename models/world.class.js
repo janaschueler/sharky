@@ -56,6 +56,7 @@ class World {
     this.gameOverLoader = new DrawableObject();
     this.gameOverLoader.loadImages(this.IMAGES_GAME_OVER);
     this.gameOverLoader.loadImages(this.IMAGES_TRAY_AGAIN);
+    this.endGame = new EndGame(this);
   }
 
   /**
@@ -65,6 +66,15 @@ class World {
   setWorld() {
     this.character.world = this;
   }
+
+  /**
+   * Starts the animation loop to update the character state every 200ms.
+   *
+   * - Sets sleep mode after 15s of inactivity (if not dead).
+   * - Plays death animation when energy is 0.
+   * - Plays hurt animation and interrupts sleep when damaged.
+   * - Triggers attack animation on SPACE or D key press.
+   */
   animate() {
     setInterval(() => {
       const now = Date.now();
@@ -141,7 +151,7 @@ class World {
       this.level.enemies = this.level.enemies.filter((enemy) => !enemy.markedForRemoval);
       if (this.boss.energy <= 0 && !this.winScreenShown) {
         this.winScreenShown = true;
-        this.triggerWinScreen();
+        this.endGame.triggerWinScreen();
       }
     }, 1000 / 60);
   }
@@ -281,12 +291,12 @@ class World {
     mo.x = mo.x * -1;
   }
 
-  // /**
-  //  * Creates a bubble when the 'D' key is pressed, with an optional poison effect.
-  //  * Ensures a cooldown period of 1 second between bubble creations.
-  //  *
-  //  * @param {boolean} [isPoison=false] - Determines if the bubble is poisonous. Defaults to `false`.
-  //  */
+  /**
+   * Creates a bubble when the 'D' key is pressed, with an optional poison effect.
+   * Ensures a cooldown period of 1 second between bubble creations.
+   *
+   * @param {boolean} [isPoison=false] - Determines if the bubble is poisonous. Defaults to `false`.
+   */
   createBubble(isPoison = false) {
     if (this.keyboard.D && !this.bubbleCoolDown) {
       this.bubbleCoolDown = true;
@@ -294,154 +304,13 @@ class World {
       setTimeout(() => {
         new ThrowableObject(this.character.x, this.character.y, this, isPoison, direction);
         this.bubbleCoolDown = false;
-      }, 1500);
+      }, 800);
     }
 
     if (!this.keyboard.D) {
       this.bubbleCoolDown = false;
     }
   }
-
-  /**
-   * Triggers the game over screen sequence. This method ensures that the game over
-   * screen is only shown once by checking the `endScreenShown` flag. If the flag
-   * is not set, it plays the "lost" music, displays the game over animation, and
-   * shows the "Try Again" button.
-   *
-   * @method
-   * @returns {void}
-   */
-  triggerGameOverScreen() {
-    if (this.endScreenShown) return;
-    this.endScreenShown = true;
-    this.lostMusic.play();
-    this.showGameOverAnimation();
-    this.showTryAgainButton();
-  }
-
-  /**
-   * Displays a game over animation by creating an image element,
-   * adding it to the document body, and cycling through a series
-   * of images at a set interval to create an animation effect.
-   *
-   * @method
-   */
-  showGameOverAnimation() {
-    const gameOverImg = document.createElement("img");
-    gameOverImg.classList.add("game-over-image");
-    document.body.appendChild(gameOverImg);
-    let frame = 0;
-    setInterval(() => {
-      gameOverImg.src = this.IMAGES_GAME_OVER[frame];
-      frame++;
-      if (frame >= this.IMAGES_GAME_OVER.length) frame = 0;
-    }, 150);
-  }
-
-  /**
-   * Displays a "Try Again" button on the screen.
-   * The button is created as an image element, styled with a specific class,
-   * and appended to the document body. When clicked, the button reloads the page.
-   */
-  // showTryAgainButton() {
-  //   const tryAgainBtn = document.createElement("img");
-  //   tryAgainBtn.src = this.IMAGES_TRAY_AGAIN[0];
-  //   tryAgainBtn.classList.add("try-again-button");
-  //   document.body.appendChild(tryAgainBtn);
-  //   tryAgainBtn.addEventListener("click", () => {
-  //     const gameContainer = document.querySelector(".game-container");
-  //     gameContainer.innerHTML = "";
-  //     init();
-  //     startGame();
-  //   }); }
-  //
-
-  showTryAgainButton() {
-    const tryAgainBtn = document.createElement("img");
-    tryAgainBtn.src = this.IMAGES_TRAY_AGAIN[0];
-    tryAgainBtn.classList.add("try-again-button");
-    document.body.appendChild(tryAgainBtn);
-    tryAgainBtn.addEventListener("click", () => {
-      restartGame();
-    });
-  }
-
-  stop() {
-    clearInterval(this.gameLoop);
-    clearInterval(this.enemyLoop);
-    clearInterval(this.winAnimationInterval); // <--- wichtig
-    const winImg = document.querySelector(".win-screen-image");
-    if (winImg) winImg.remove();
-    if (this.level && this.level.enemies) {
-      this.level.enemies = [];
-    }
-    if (this.backgroundMusic) {
-      this.backgroundMusic.pause();
-      this.backgroundMusic.currentTime = 0;
-    }
-  }
-
-  /**
-   * Triggers the win screen sequence if it has not already been shown.
-   * This includes playing the win music, displaying the win animation,
-   * and showing the "Try Again" button.
-   *
-   * @returns {void}
-   */
-  triggerWinScreen() {
-    if (this.endScreenShown) return;
-    this.endScreenShown = true;
-    this.character.stopAllLoops();
-    this.winMusic.play();
-    this.showWinAnimation();
-    this.showTryAgainButton();
-  }
-
-  /**
-   * Displays a win animation on the screen by creating an image element
-   * and cycling through a series of images at a fixed interval.
-   *
-   * The animation loops through the `IMAGES_WIN_ANIMATION` array, updating
-   * the `src` attribute of the image element to display each frame in sequence.
-   *
-   * @method
-   */
-  // showWinAnimation() {
-  //   const winImg = document.createElement("img");
-  //   winImg.classList.add("win-screen-image");
-  //   document.body.appendChild(winImg);
-  //   let frame = 0;
-  //   setInterval(() => {
-  //     winImg.src = this.IMAGES_WIN_ANIMATION[frame];
-  //     frame++;
-  //     if (frame >= this.IMAGES_WIN_ANIMATION.length) frame = 0;
-  //   }, 150);
-  // }
-
-  showWinAnimation() {
-    const winImg = document.createElement("img");
-    winImg.classList.add("win-screen-image");
-    document.body.appendChild(winImg);
-    let frame = 0;
-    setInterval(() => {
-      winImg.src = this.IMAGES_WIN_ANIMATION[frame];
-      frame++;
-      if (frame >= this.IMAGES_WIN_ANIMATION.length) frame = 0;
-    }, 150);
-  }
-
-  // /**
-  //  * Creates and displays a "Try Again" button on the screen.
-  //  * The button is styled with a CSS class for positioning and visuals.
-  //  * When clicked, the button triggers a page reload to restart the game.
-  //  */
-  // showTryAgainButton() {
-  //   const tryAgainBtn = document.createElement("img");
-  //   tryAgainBtn.src = this.IMAGES_TRAY_AGAIN[0];
-  //   tryAgainBtn.classList.add("try-again-button");
-  //   document.body.appendChild(tryAgainBtn);
-  //   tryAgainBtn.addEventListener("click", () => location.reload());
-  // }
 
   /**
    * Initializes the background music for the game.
@@ -451,10 +320,9 @@ class World {
    *   to comply with browser autoplay policies.
    * - Event listeners are removed after the music starts to prevent multiple triggers.
    */
-
   initBackgroundMusic() {
     this.backgroundMusic.loop = true;
-    this.backgroundMusic.volume = 0.2;
+    this.backgroundMusic.volume = 0.1;
     const playMusic = () => {
       this.backgroundMusic.play().catch((e) => {
         console.warn("🎵 Background music could not be started:", e);

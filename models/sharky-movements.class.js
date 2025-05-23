@@ -122,7 +122,7 @@ class SharkyMovements {
    * @param {Object} k - The keyboard input state.
    * @returns {boolean} True if movement to the left is possible.
    */
-  simLeft(k) {
+  swimLeft(k) {
     return k.LEFT && this.sharky.x > -1300;
   }
 

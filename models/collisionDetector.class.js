@@ -27,6 +27,7 @@ class CollisionDetector {
       allEnemies.push(this.world.boss);
     }
     allEnemies.forEach((enemy) => {
+      if (enemy.dead) return;
       if (this.world.character.isColliding(enemy)) {
         this.world.character.lastHurtBy = enemy;
         this.world.character.hit();
@@ -117,18 +118,10 @@ class CollisionDetector {
     }
   }
 
-  /**
-   * Checks if the character performs a "fin attack" on any Puffers enemies when the SPACE key is pressed.
-   * Iterates through all enemies in the current level, and for each enemy that is an instance of Puffers,
-   * verifies if the character is in front of and colliding with the enemy. If so, triggers the enemy's
-   * reaction to being hit and plays the hurt sound if available.
-   *
-   * @returns {void}
-   */
   checkFinAttackOnPuffers() {
     if (!this.world.keyboard.SPACE) return;
     this.world.level.enemies.forEach((enemy) => {
-      if (enemy instanceof Puffers && this.world.character.isInFront(enemy) && this.world.character.isColliding(enemy)) {
+      if (enemy instanceof Puffers && (this.world.character.isClose(enemy) || this.world.character.isColliding(enemy))) {
         enemy.reactToHit();
         if (enemy.playSoundHurt) {
           enemy.playSoundHurt();

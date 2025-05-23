@@ -93,7 +93,7 @@ class SharkyAttack {
     this.sharky.playAnimationOnce(this.sharky.IMAGES_ATTACK_FIN, () => {
       this.isAttackingAnimation = false;
     });
-    this.sharky.playSound(this.AUDIO_FIN_SLAP);
+    this.sharky.playSound(this.sharky.AUDIO_FIN_SLAP);
     if (this.sharky.isColliding(enemy)) {
       enemy.reactToHit();
     }
@@ -131,9 +131,17 @@ class SharkyAttack {
     this.sharky.playAnimationOnce(this.sharky.IMAGES_ATTACK_BUBBLE, () => {
       this.isAttackingAnimation = false;
     });
-
     this.sharky.world.createBubble();
-    this.sharky.playLoopedSound("bubble", this.AUDIO_BUBBLE);
+    const audio = this.sharky.AUDIO_BUBBLE;
+    setTimeout(() => {
+      audio.currentTime = 0;
+      audio.play();
+      setTimeout(() => {
+        audio.pause();
+        audio.currentTime = 0;
+      }, 500);
+    }, 500);
+
     return true;
   }
 
@@ -155,13 +163,23 @@ class SharkyAttack {
       return false;
     }
     if (this.world.poison <= 0) {
-      this.sharky.playSound(this.AUDIO_NO_POISON);
+      this.sharky.playSound(this.sharky.AUDIO_NO_POISON);
       this.isAttackingAnimation = false;
       return false;
     }
     return this.statPoisonAttack(now);
   }
 
+  /**
+   * Executes Sharky's poison attack action.
+   *
+   * Updates the last poison attack time, decreases the world's poison level,
+   * updates the poison status bar, plays the poison attack animation and sound,
+   * and creates a poison bubble in the world.
+   *
+   * @param {number} now - The current timestamp or frame time when the attack is triggered.
+   * @returns {boolean} Returns true when the poison attack is executed.
+   */
   statPoisonAttack(now) {
     this.lastPoisonAttackTime = now;
     this.world.poison = Math.max(0, this.world.poison - 1);
@@ -169,7 +187,7 @@ class SharkyAttack {
     this.sharky.playAnimationOnce(this.sharky.IMAGES_ATTACK_BUBBLE_POISON, () => {
       this.isAttackingAnimation = false;
     });
-    this.sharky.playLoopedSound("bubble", this.AUDIO_BUBBLE);
+    this.sharky.playSound(this.sharky.AUDIO_BUBBLE);
     this.sharky.world.createBubble(true);
     return true;
   }
@@ -189,6 +207,12 @@ class SharkyAttack {
     }
   }
 
+  /**
+   * Plays the provided audio element from the beginning.
+   * If the audio is already playing, it will be paused and reset before playing again.
+   *
+   * @param {HTMLAudioElement} audio - The audio element to play. If falsy, the function does nothing.
+   */
   playSound(audio) {
     if (!audio) return;
     audio.pause();
