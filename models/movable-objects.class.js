@@ -390,7 +390,7 @@ class MovableObjects extends DrawableObject {
    *
    * @param {string} name - The unique identifier for the sound.
    * @param {HTMLAudioElement} audio - The audio element to be played.
-   * @returns {void} This function does not return a value.
+   * @returns {void} This function does not regraa value.
    *
    * @throws {DOMException} If the audio playback fails, a warning is logged to the console.
    */
@@ -398,7 +398,7 @@ class MovableObjects extends DrawableObject {
     if (!audio || this.audioStates[name]) return;
     audio.loop = true;
     audio.currentTime = 0;
-    audio.play();
+    audio.play().catch(() => {});
     this.audioStates[name] = true;
   }
 }

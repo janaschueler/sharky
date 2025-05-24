@@ -44,12 +44,12 @@ function setupStartButton() {
  * @global {World} world - The global game world instance.
  */
 function startGame() {
+  document.getElementById("sound-btn").style.display = "flex";
   document.getElementById("start-screen").style.display = "none";
   const canvas = document.getElementById("canvas");
   const container = document.querySelector(".game-container");
   const displaySize = canvas.getBoundingClientRect();
   world = new World(canvas, keyboard, displaySize.width, displaySize.height);
-
   setMuteState(isMuted);
   const icon = document.querySelector("#sound-btn img");
   icon.src = isMuted ? "img/icon/volume-xmark-solid.svg" : "img/icon/volume-high-solid.svg";
@@ -71,7 +71,12 @@ window.addEventListener("orientationchange", checkOrientation);
 function checkOrientation() {
   const overlay = document.getElementById("rotate-device-overlay");
   const game = document.querySelector(".game-container");
-  if (window.innerWidth < 550) {
+
+  const isMobileOrTablet = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || "ontouchstart" in window || navigator.maxTouchPoints > 0;
+
+  const isPortrait = window.innerHeight > window.innerWidth;
+
+  if (isMobileOrTablet && isPortrait) {
     overlay.style.display = "flex";
     game.style.display = "none";
   } else {
@@ -79,9 +84,6 @@ function checkOrientation() {
     game.style.display = "block";
   }
 }
-
-document.getElementById("sound-btn").addEventListener("click", toggleIcon);
-document.getElementById("sound-btn").addEventListener("keydown", toggleIcon);
 
 /**
  * Toggles the sound icon and updates the sound settings in the game.
@@ -95,6 +97,10 @@ document.getElementById("sound-btn").addEventListener("keydown", toggleIcon);
  * @property {string} event.type - The type of the event (e.g., "keydown", "click").
  * @property {string} [event.code] - The code of the key pressed (e.g., "Space", "Enter").
  */
+
+document.getElementById("sound-btn").addEventListener("click", toggleIcon);
+// document.getElementById("sound-btn").addEventListener("keydown", toggleIcon);
+
 function toggleIcon(event) {
   if (event.type === "keydown" && (event.code === "Space" || event.code === "Enter")) {
     event.preventDefault();
@@ -321,4 +327,16 @@ function bindSoundButton() {
   if ("ontouchstart" in window || navigator.maxTouchPoints > 0) {
     document.querySelector(".mobileJoystick").style.display = "flex";
   }
+}
+
+function openImpressum() {
+  const overlay = document.getElementById("impressumOverlay");
+  overlay.classList.remove("d_none");
+  overlay.classList.remove("opacity");
+}
+
+function closeImpressum() {
+  const overlay = document.getElementById("impressumOverlay");
+  overlay.classList.add("opacity");
+  setTimeout(() => overlay.classList.add("d_none"), 300); // Optionales Fade-out
 }

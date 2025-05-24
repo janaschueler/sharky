@@ -31,3 +31,38 @@ class StatusBarLife extends DrawableObject {
     this.img = this.imageCache[imagePath];
   }
 }
+
+/**
+ * Represents the life status bar of the boss.
+ * Displays different images based on the current life percentage.
+ */
+class StatusBarBossLife extends DrawableObject {
+  percentageLife = 100;
+
+  constructor() {
+    super();
+    this.IMAGES_LIFE = ["img/4. Marcadores/Purple/life/0.png", "img/4. Marcadores/Purple/life/20.png", "img/4. Marcadores/Purple/life/60.png", "img/4. Marcadores/Purple/life/100.png"];
+    this.loadImages(this.IMAGES_LIFE);
+    this.setPercentage(100);
+    this.x = 300;
+    this.y = 10;
+    this.energy = 100;
+    this.width = 180;
+    this.height = 50;
+  }
+
+  /**
+   * Updates the life image based on percentage.
+   */
+  setPercentage(percentage) {
+    this.percentageLife = percentage;
+
+    let index = 0;
+    if (percentage >= 100) index = 3;
+    else if (percentage >= 60) index = 2;
+    else if (percentage >= 20) index = 1;
+    else index = 0;
+    let imagePath = this.IMAGES_LIFE[index];
+    this.img = this.imageCache[imagePath];
+  }
+}

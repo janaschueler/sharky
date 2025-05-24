@@ -1,4 +1,4 @@
-/* impressum.css */
+
 @font-face {
   font-family: "Open Sans Condensed";
   src: url("img/5.Font/Luckiest_Guy/OpenSansCondensed-Medium.woff2") format("woff2"), url("./img/5.Font/Luckiest_Guy/OpenSansCondensed-Medium.woff") format("woff");
@@ -123,7 +123,6 @@ p {
   height: 22px;
   filter: invert(1);
 }
-
 
 @media (max-width: 600px) {
   .impressum-container {

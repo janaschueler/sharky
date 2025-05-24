@@ -12,6 +12,14 @@ h1 {
   font-style: normal;
 }
 
+@font-face {
+  font-family: "Open Sans Condensed";
+  src: url("img/5.Font/Luckiest_Guy/OpenSansCondensed-Medium.woff2") format("woff2"), url("./img/5.Font/Luckiest_Guy/OpenSansCondensed-Medium.woff") format("woff");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
 html,
 body {
   display: flex;
@@ -65,7 +73,7 @@ canvas {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  z-index: 100;
+  z-index: 1000;
   width: 100%;
   height: 100%;
   background-color: rgba(0, 0, 0, 0.8);
@@ -111,26 +119,34 @@ canvas {
   top: 10px;
   right: 10px;
   display: flex;
+  flex-direction: row;
   gap: 10px;
   z-index: 100;
+  white-space: nowrap;
 }
 
 .navigation button {
   width: 32px;
   height: 32px;
-  background: none;
-  border: none;
-  cursor: pointer;
+  min-width: 32px;
+  min-height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
+  background: black;
+  border: none;
+  border-radius: 50%;
+  font-size: 16px;
+  color: white;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 .navigation img {
-  width: 100%;
-  height: 100%;
+  width: 16px;
+  height: 16px;
   object-fit: contain;
+  filter: invert(1);
 }
 
 #instructionsButton {
@@ -242,7 +258,7 @@ canvas {
   transform: translate(-50%, -50%);
   width: 200px;
   cursor: pointer;
-  z-index: 1001;
+  z-index: 100;
 }
 
 .win-screen-image {
@@ -251,22 +267,16 @@ canvas {
   left: 50%;
   transform: translate(-50%, -50%);
   width: 400px;
-  z-index: 1000;
-}
-
-.try-again-button {
-  position: absolute;
-  top: 60%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 200px;
-  cursor: pointer;
-  z-index: 1001;
+  z-index: 100;
 }
 
 #rotate-device-overlay {
   display: flex;
   flex-direction: column;
+}
+
+#sound-btn {
+  display: none;
 }
 
 a {
@@ -283,6 +293,78 @@ a:hover {
 .linkImpressum {
   margin-top: 32px;
   color: black!;
+}
+
+#impressumOverlay {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 101;
+  flex-direction: column;
+  color: white;
+  padding: 32px;
+}
+
+.impressum-modal {
+  background-color: rgba(0, 0, 0, 0.8);
+  padding: 32px;
+  border-radius: 8px;
+  max-width: 600px;
+  width: 90%;
+  text-align: left;
+  z-index: 1000;
+}
+
+#close-impressum-btn {
+  position: absolute;
+  top: 52px;
+  right: 52px;
+  background: none;
+  border: none;
+  filter: invert(1);
+  cursor: pointer;
+}
+
+#close-impressum-btn img {
+  width: 32px;
+  height: 32px;
+}
+
+p {
+  font-family: "Open Sans Condensed", sans-serif;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  font-size: 18px;
+  color: white;
+}
+
+.headerButton {
+  position: absolute;
+  top: 12px;
+  left: 5%;
+  z-index: 100;
+}
+
+header {
+  position: relative;
+  width: 100%;
+  max-width: 720px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+}
+
+
+header h1 {
+  margin: 0 auto;
+  font-size: 64px;
+  font-family: "LuckiestGuy", sans-serif;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  color: white;
 }
 
 @media (hover: none) and (pointer: coarse) {

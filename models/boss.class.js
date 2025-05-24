@@ -24,7 +24,7 @@ class Boss extends MovableObjects {
   };
   world;
   firstContact = false;
-  energy = 60;
+  energy = 100;
   speed = 2;
   returning = false;
   hurtAnimationPlaying = false;

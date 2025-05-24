@@ -16,9 +16,9 @@ class ThrowableObject extends MovableObjects {
   constructor(x, y, world, isPoison = false, direction = "right") {
     super();
     if (direction === "left") {
-      this.x = x - 0; 
+      this.x = x - 0;
     } else {
-      this.x = x + 140; 
+      this.x = x + 140;
     }
     this.y = y + 100;
     this.world = world;
@@ -59,12 +59,13 @@ class ThrowableObject extends MovableObjects {
   /**
    * Throws the object to the right by clearing any existing movement interval
    * and applying gravity with a rightward force.
-   * 
+   *
    * @method
    * @returns {void}
    */
   throwRight() {
     if (this.moveInterval) clearInterval(this.moveInterval);
+    this.speedX = 6;
     this.applyGravity(1);
   }
 
@@ -74,6 +75,7 @@ class ThrowableObject extends MovableObjects {
    */
   throwLeft() {
     if (this.moveInterval) clearInterval(this.moveInterval);
+    this.speedX = 6;
     this.applyGravity(-1);
   }
 

@@ -143,6 +143,7 @@ class CollisionDetector {
   handleBossCollision(boss, bubble, index, bubblesToRemove) {
     if (bubble.isPoison && boss.isColliding(bubble)) {
       boss.reactToHit();
+      this.world.statusBarBoss.setPercentage(boss.energy);
       bubble.clearExistingMovement();
       bubblesToRemove.push(index);
     }

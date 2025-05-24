@@ -135,7 +135,7 @@ class SharkyAttack {
     const audio = this.sharky.AUDIO_BUBBLE;
     setTimeout(() => {
       audio.currentTime = 0;
-      audio.play();
+      audio.play().catch(() => {});
       setTimeout(() => {
         audio.pause();
         audio.currentTime = 0;
@@ -217,7 +217,7 @@ class SharkyAttack {
     if (!audio) return;
     audio.pause();
     audio.currentTime = 0;
-    audio.play();
+    audio.play().catch(() => {});
   }
 }
 

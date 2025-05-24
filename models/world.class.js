@@ -42,6 +42,7 @@ class World {
   constructor(canvas, keyboard) {
     this.ctx = canvas.getContext("2d"); // with .getContext("2d") we get the 2d rendering context
     this.canvas = canvas;
+    this.statusBarBoss = new StatusBarBossLife();
     this.keyboard = keyboard || new Keyboard();
     this.character = new Sharky(this);
     this.boss = new Boss(this);
@@ -149,6 +150,8 @@ class World {
   checkEnemyState() {
     setInterval(() => {
       this.level.enemies = this.level.enemies.filter((enemy) => !enemy.markedForRemoval);
+      let percentage = this.boss.energy;
+      this.statusBarBoss.setPercentage(percentage);
       if (this.boss.energy <= 0 && !this.winScreenShown) {
         this.winScreenShown = true;
         this.endGame.triggerWinScreen();
@@ -165,26 +168,30 @@ class World {
    *
    * @method
    */
-  draw() {
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    this.ctx.translate(this.camera_x, 0);
-    this.addObjectsToMap(this.level.backgroundObject);
-    this.ctx.translate(-this.camera_x, 0);
-    this.addToMap(this.statusBar);
-    this.addToMap(this.statusBarCoins);
-    this.addToMap(this.statusBarPoison);
-    this.ctx.translate(this.camera_x, 0);
-    this.addObjectsToMap(this.level.light);
-    this.addObjectsToMap(this.level.enemies);
-    this.addObjectsToMap(this.level.collectables);
-    this.throwableObjects.forEach((obj) => this.addToMap(obj));
-    this.addToMap(this.character);
-    this.addToMap(this.boss);
-    this.ctx.translate(-this.camera_x, 0);
-    requestAnimationFrame(() => {
-      this.draw();
-    });
-  }
+draw() {
+  this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+  this.ctx.translate(this.camera_x, 0);
+  this.addObjectsToMap(this.level.backgroundObject);
+  this.ctx.translate(-this.camera_x, 0); 
+  this.statusBarBoss.x = this.canvas.width - 200;
+  this.statusBarBoss.y = 10;
+  this.addToMap(this.statusBarBoss);
+  this.addToMap(this.statusBar);
+  this.addToMap(this.statusBarCoins);
+  this.addToMap(this.statusBarPoison);
+  this.ctx.translate(this.camera_x, 0);
+  this.addObjectsToMap(this.level.light);
+  this.addObjectsToMap(this.level.enemies);
+  this.addObjectsToMap(this.level.collectables);
+  this.throwableObjects.forEach((obj) => this.addToMap(obj));
+  this.addToMap(this.character);
+  this.addToMap(this.boss);
+  this.ctx.translate(-this.camera_x, 0); 
+  requestAnimationFrame(() => {
+    this.draw();
+  });
+}
+
 
   /**
    * Adds multiple objects to the map by iterating through the provided array

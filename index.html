@@ -10,18 +10,22 @@
   </head>
 
   <body onload="init()">
-    <h1>Sharky</h1>
-
+    <header>
+      <h1>Sharky</h1>
+    </header>
     <div id="rotate-device-overlay">
       <p>Please rotate your device to landscape mode</p>
       <p>
-        <a href="impressum.html" target="_blank">Impressum</a>
+        <a onclick="openImpressum()">Impressum</a>
       </p>
     </div>
 
     <div class="game-container" id="fullscreen">
       <div class="navigation">
-        <button class="joyStickUnit" id="instructionsButton" onclick="openInstruction()">i</button>
+        <button id="header-icon-btn" onclick="location.reload()">
+          <img src="./img/icon/house-solid.svg" alt="Home Button" />
+        </button>
+        <button id="instructionsButton" onclick="openInstruction()">i</button>
         <button id="sound-btn">
           <img src="img/icon/volume-high-solid.svg" alt="sound icon" />
         </button>
@@ -63,9 +67,34 @@
         <img id="start-btn" src="img/6.Botones/Start/1.png" />
       </div>
     </div>
+    <div id="impressumOverlay" class="d_none opacity">
+      <button id="close-impressum-btn" onclick="closeImpressum()">
+        <img src="img/icon/xmark-solid.svg" alt="close" />
+      </button>
+      <div class="impressum-modal">
+        <h1 class="headline">Impressum</h1>
+        <p>
+          Jana Schüler<br />
+          Am Juffernbach 27<br />
+          48157 Münster<br />
+        </p>
+        <h3>Kontakt</h3>
+        <p>
+          <a class="pStyle" href="tel:0176/57698345">Telefon: 0176/57698354</a><br />
+          <a class="pStyle" href="mailto:jawaehing@gmail.com">E-Mail: jawaehning@gmail.com</a>
+        </p>
+        <p class="credit-text">
+          Icons von
+          <a class="pStyle" href="https://fontawesome.com/" target="_blank">Font Awesome</a><br />
+          Lizenz:
+          <a class="pStyle" href="https://fontawesome.com/license/free" target="_blank">CC Attribution 4.0</a><br />
+          Quelle: <a class="pStyle" href="https://www.e-recht24.de" target="_blank">e-recht24.de</a>
+        </p>
+      </div>
+    </div>
     <footer class="footer">
       <p class="linkImpressum">
-        <a href="impressum.html" target="_blank">Impressum</a>
+        <a onclick="openImpressum()">Impressum</a>
       </p>
     </footer>
   </body>
