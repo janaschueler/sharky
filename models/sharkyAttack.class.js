@@ -19,13 +19,10 @@ class SharkyAttack {
     if (this.isAttackingAnimation || now - this.lastAttackTime < this.attackCooldown) return;
     this.sharky.interruptSleep();
     const attackTriggered = this.tryAllAttacks(now);
-
     if (attackTriggered) {
       this.lastAttackTime = now;
       this.isAttackingAnimation = true;
-    } else {
-      this.sharky.stopSound("bubble", this.AUDIO_BUBBLE);
-    }
+    } else this.sharky.stopSound("bubble", this.AUDIO_BUBBLE);
   }
 
   /**
@@ -55,9 +52,7 @@ class SharkyAttack {
    * @returns {boolean} `true` if a fin attack was successful on any enemy, otherwise `false`.
    */
   tryFinAttack(now) {
-    for (const enemy of this.world.level.enemies) {
-      if (this.handleFinAttack(enemy, now)) return true;
-    }
+    for (const enemy of this.world.level.enemies) if (this.handleFinAttack(enemy, now)) return true;
     return false;
   }
 
@@ -90,13 +85,9 @@ class SharkyAttack {
     if (now - this.lastFinSlapTime < this.sharky.finSlapCooldown) return false;
     this.isAttackingAnimation = true;
     this.sharky.lastFinSlapTime = now;
-    this.sharky.playAnimationOnce(this.sharky.IMAGES_ATTACK_FIN, () => {
-      this.isAttackingAnimation = false;
-    });
+    this.sharky.playAnimationOnce(this.sharky.IMAGES_ATTACK_FIN, () => (this.isAttackingAnimation = false));
     this.sharky.playSound(this.sharky.AUDIO_FIN_SLAP);
-    if (this.sharky.isColliding(enemy)) {
-      enemy.reactToHit();
-    }
+    if (this.sharky.isColliding(enemy)) enemy.reactToHit();
     return true;
   }
 
@@ -128,9 +119,7 @@ class SharkyAttack {
    * @returns {boolean} Returns true when the bubble attack interval is started.
    */
   startBubbleAttackInterval(enemy) {
-    this.sharky.playAnimationOnce(this.sharky.IMAGES_ATTACK_BUBBLE, () => {
-      this.isAttackingAnimation = false;
-    });
+    this.sharky.playAnimationOnce(this.sharky.IMAGES_ATTACK_BUBBLE, () => (this.isAttackingAnimation = false));
     this.sharky.world.createBubble();
     const audio = this.sharky.AUDIO_BUBBLE;
     setTimeout(() => {
@@ -141,7 +130,6 @@ class SharkyAttack {
         audio.currentTime = 0;
       }, 500);
     }, 500);
-
     return true;
   }
 
@@ -159,9 +147,7 @@ class SharkyAttack {
    */
   handlePoisonAttack(boss) {
     const now = Date.now();
-    if (now - this.lastPoisonAttackTime < this.poisonAttackCoolDown) {
-      return false;
-    }
+    if (now - this.lastPoisonAttackTime < this.poisonAttackCoolDown) return false;
     if (this.world.poison <= 0) {
       this.sharky.playSound(this.sharky.AUDIO_NO_POISON);
       this.isAttackingAnimation = false;
@@ -184,9 +170,7 @@ class SharkyAttack {
     this.lastPoisonAttackTime = now;
     this.world.poison = Math.max(0, this.world.poison - 1);
     this.world.statusBarPoison.storePoison(this.world.poison);
-    this.sharky.playAnimationOnce(this.sharky.IMAGES_ATTACK_BUBBLE_POISON, () => {
-      this.isAttackingAnimation = false;
-    });
+    this.sharky.playAnimationOnce(this.sharky.IMAGES_ATTACK_BUBBLE_POISON, () => (this.isAttackingAnimation = false));
     this.sharky.playSound(this.sharky.AUDIO_BUBBLE);
     this.sharky.world.createBubble(true);
     return true;

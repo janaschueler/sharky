@@ -84,17 +84,24 @@ class World {
         this.character.playDeathAnimation();
         return;
       }
-      if (this.character.isHurt()) {
-        this.character.interruptSleep();
-        const hurtImages = this.lastHurtBy instanceof Jellyfish ? this.IMAGES_HURT_ELECTRIC : this.IMAGES_HURT_POISON;
-        this.playAnimation(hurtImages);
-        this.character.sleeping = false;
-        return;
-      }
-      if (this.keyboard.SPACE || this.keyboard.D) {
-        this.character.attackHandler.handleAttackAnimation();
-      }
+      if (this.character.isHurt()) return this.startHurtAnimation();
+      if (this.keyboard.SPACE || this.keyboard.D) this.character.attackHandler.handleAttackAnimation();
     }, 200);
+  }
+
+  /**
+   * Triggers the hurt animation for the character based on the source of damage.
+   * If the character was last hurt by a Jellyfish, plays the electric hurt animation;
+   * otherwise, plays the poison hurt animation. Also interrupts the character's sleep state.
+   *
+   * @returns {void}
+   */
+  startHurtAnimation() {
+    this.character.interruptSleep();
+    const hurtImages = this.lastHurtBy instanceof Jellyfish ? this.IMAGES_HURT_ELECTRIC : this.IMAGES_HURT_POISON;
+    this.playAnimation(hurtImages);
+    this.character.sleeping = false;
+    return;
   }
 
   /**
@@ -126,16 +133,10 @@ class World {
       const allEnemies = [...this.level.enemies, this.boss];
       allEnemies.forEach((enemy) => {
         let isClose;
-        if (enemy === this.boss) {
-          isClose = this.character.bossIsClose(enemy);
-        } else {
-          isClose = this.character.isClose(enemy);
-        }
-        if (isClose) {
-          enemy.closeBy();
-        } else {
-          enemy.farAway();
-        }
+        if (enemy === this.boss) isClose = this.character.bossIsClose(enemy);
+        else isClose = this.character.isClose(enemy);
+        if (isClose) enemy.closeBy();
+        else enemy.farAway();
       });
     }, 1000 / 60);
   }
@@ -168,30 +169,45 @@ class World {
    *
    * @method
    */
-draw() {
-  this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-  this.ctx.translate(this.camera_x, 0);
-  this.addObjectsToMap(this.level.backgroundObject);
-  this.ctx.translate(-this.camera_x, 0); 
-  this.statusBarBoss.x = this.canvas.width - 200;
-  this.statusBarBoss.y = 10;
-  this.addToMap(this.statusBarBoss);
-  this.addToMap(this.statusBar);
-  this.addToMap(this.statusBarCoins);
-  this.addToMap(this.statusBarPoison);
-  this.ctx.translate(this.camera_x, 0);
-  this.addObjectsToMap(this.level.light);
-  this.addObjectsToMap(this.level.enemies);
-  this.addObjectsToMap(this.level.collectables);
-  this.throwableObjects.forEach((obj) => this.addToMap(obj));
-  this.addToMap(this.character);
-  this.addToMap(this.boss);
-  this.ctx.translate(-this.camera_x, 0); 
-  requestAnimationFrame(() => {
-    this.draw();
-  });
-}
+  draw() {
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.ctx.translate(this.camera_x, 0);
+    this.addObjectsToMap(this.level.backgroundObject);
+    this.ctx.translate(-this.camera_x, 0);
+    this.addToMapStatusBar();
+    this.ctx.translate(this.camera_x, 0);
+    this.addToMapObjectInteraction();
+    this.throwableObjects.forEach((obj) => this.addToMap(obj));
+    this.addToMap(this.character);
+    this.addToMap(this.boss);
+    this.ctx.translate(-this.camera_x, 0);
+    requestAnimationFrame(() => this.draw());
+  }
 
+  /**
+   * Adds various interactive objects from the current level to the map.
+   * Specifically, it adds light sources, enemies, and collectable items
+   * by invoking `addObjectsToMap` for each respective group.
+   *
+   * @returns {void}
+   */
+  addToMapObjectInteraction() {
+    this.addObjectsToMap(this.level.light);
+    this.addObjectsToMap(this.level.enemies);
+    this.addObjectsToMap(this.level.collectables);
+  }
+
+  /**
+   * Adds all status bar elements (main status bar, coins, poison, and boss indicators)
+   * to the map display. This method ensures that all relevant status bar components
+   * are rendered on the map for the user interface.
+   */
+  addToMapStatusBar() {
+    this.addToMap(this.statusBar);
+    this.addToMap(this.statusBarCoins);
+    this.addToMap(this.statusBarPoison);
+    this.addToMap(this.statusBarBoss);
+  }
 
   /**
    * Adds multiple objects to the map by iterating through the provided array
@@ -217,24 +233,42 @@ draw() {
    */
   addToMap(mo) {
     this.ctx.save();
-    if (!mo.swimUp && !mo.swimDown) {
-      if (mo.otherDirection) {
-        this.flipImage(mo);
-      }
-      mo.draw(this.ctx);
-      if (mo.otherDirection) {
-        mo.x = mo.x * -1;
-      }
-    } else {
-      if (mo.otherDirection) {
-        const angle = mo.swimUp ? -25 : 25;
-        this.rotateImageFlipped(mo, angle);
-      } else {
-        const angle = mo.swimUp ? -25 : 25;
-        this.rotateImage(mo, angle);
-      }
-    }
+    if (!mo.swimUp && !mo.swimDown) this.addToMapSwimVertical(mo);
+    else this.swimLeftMethod(mo);
     this.ctx.restore();
+  }
+
+  /**
+   * Rotates the given object to simulate swimming left, adjusting the angle based on its direction and swim state.
+   *
+   * @param {Object} mo - The movable object to rotate.
+   * @param {boolean} mo.otherDirection - Indicates if the object is facing the opposite direction (flipped).
+   * @param {boolean} mo.swimUp - Indicates if the object is swimming upwards.
+   */
+  swimLeftMethod(mo) {
+    if (mo.otherDirection) {
+      const angle = mo.swimUp ? -25 : 25;
+      this.rotateImageFlipped(mo, angle);
+    } else {
+      const angle = mo.swimUp ? -25 : 25;
+      this.rotateImage(mo, angle);
+    }
+  }
+
+  /**
+   * Adds a movable object to the map with vertical swimming behavior.
+   * If the object is facing the opposite direction (`otherDirection`), its image is flipped before drawing.
+   * After drawing, if the object was flipped, its x-coordinate is inverted.
+   *
+   * @param {Object} mo - The movable object to be drawn on the map.
+   * @param {boolean} mo.otherDirection - Indicates if the object is facing the opposite direction.
+   * @param {function} mo.draw - Function to draw the object on the provided context.
+   * @param {number} mo.x - The x-coordinate of the object, which may be inverted if flipped.
+   */
+  addToMapSwimVertical(mo) {
+    if (mo.otherDirection) this.flipImage(mo);
+    mo.draw(this.ctx);
+    if (mo.otherDirection) mo.x = mo.x * -1;
   }
 
   /**
@@ -313,10 +347,7 @@ draw() {
         this.bubbleCoolDown = false;
       }, 800);
     }
-
-    if (!this.keyboard.D) {
-      this.bubbleCoolDown = false;
-    }
+    if (!this.keyboard.D) this.bubbleCoolDown = false;
   }
 
   /**
@@ -331,9 +362,7 @@ draw() {
     this.backgroundMusic.loop = true;
     this.backgroundMusic.volume = 0.1;
     const playMusic = () => {
-      this.backgroundMusic.play().catch((e) => {
-        console.warn("🎵 Background music could not be started:", e);
-      });
+      this.backgroundMusic.play().catch(() => {});
       window.removeEventListener("click", playMusic);
       window.removeEventListener("keydown", playMusic);
     };

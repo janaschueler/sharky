@@ -8,7 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Sharky | 2D Game</title>
   </head>
-
+  <!-- <body onload="init()" oncontextmenu="return false;"> -->
   <body onload="init()">
     <header>
       <h1>Sharky</h1>
@@ -33,25 +33,27 @@
       <canvas id="canvas" width="720" height="480"></canvas>
       <div class="mobileJoystick">
         <div class="joyStickUnit">
-          <button id="moveLeftBtn">
-            <img src="img/icon/arrow-left-solid.svg" alt="left button" />
+          <button id="moveLeftBtn" oncontextmenu="return false;">
+            <img src="img/icon/arrow-left-solid.svg" alt="left button" draggable="false" />
           </button>
-          <button id="moveRightBtn">
-            <img src="img/icon/arrow-right-solid.svg" alt="right button" />
+          <button id="moveRightBtn" oncontextmenu="return false;">
+            <img src="img/icon/arrow-right-solid.svg" alt="right button" draggable="false" />
           </button>
-          <button id="attackBtn">
-            <img src="img/icon/burst-solid.svg" alt="attack button" />
+          <button id="attackBtn" oncontextmenu="return false;">
+            <img src="img/icon/burst-solid.svg" alt="attack button" draggable="false" />
           </button>
         </div>
         <div class="joyStickUnit">
-          <button id="moveUpBtn">
-            <img src="img/icon/arrow-up-solid.svg" alt="up button" />
+          <button id="moveUpBtn" oncontextmenu="return false;">
+            <img src="img/icon/arrow-up-solid.svg" alt="up button" draggable="false" />
           </button>
-          <button id="moveDownBtn">
-            <img src="img/icon/arrow-down-solid.svg" alt="down button" />
+
+          <button id="moveDownBtn" oncontextmenu="return false;">
+            <img src="img/icon/arrow-down-solid.svg" alt="down button" draggable="false" />
           </button>
-          <button id="bubbleAttackBtn">
-            <img src="img/icon/circle-regular.svg" alt="extra button" />
+
+          <button id="bubbleAttackBtn" oncontextmenu="return false;">
+            <img src="img/icon/circle-regular.svg" alt="extra button" draggable="false" />
           </button>
         </div>
       </div>

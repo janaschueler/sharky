@@ -15,11 +15,8 @@ class ThrowableObject extends MovableObjects {
 
   constructor(x, y, world, isPoison = false, direction = "right") {
     super();
-    if (direction === "left") {
-      this.x = x - 0;
-    } else {
-      this.x = x + 140;
-    }
+    if (direction === "left") this.x = x - 0;
+    else this.x = x + 140;
     this.y = y + 100;
     this.world = world;
     this.isPoison = isPoison;
@@ -38,22 +35,42 @@ class ThrowableObject extends MovableObjects {
    * @returns {void}
    */
   initBubble() {
-    if (this.isPoison) {
-      this.loadImage(this.IMAGES_BUBBLE_POISON[0]);
-      this.loadImages(this.IMAGES_BUBBLE_POISON);
-      this.playAnimation(this.IMAGES_BUBBLE_POISON);
-      this.reducePoisonLevel();
-    } else {
-      this.loadImage(this.IMAGES_BUBBLE[0]);
-      this.loadImages(this.IMAGES_BUBBLE);
-      this.playAnimation(this.IMAGES_BUBBLE);
-    }
-    if (this.direction === "left") {
-      this.throwLeft();
-    } else {
-      this.throwRight();
-    }
+    if (this.isPoison) this.statPoisonBubble();
+    else this.startBubble();
+    if (this.direction === "left") this.throwLeft();
+    else this.throwRight();
     this.world.throwableObjects.push(this);
+  }
+
+  /**
+   * Initiates the bubble animation sequence.
+   * Loads the initial bubble image and then preloads all images for the
+   * bubble animation. Finally, it starts the continuous playback of the
+   * bubble animation.
+   *
+   * @method
+   * @returns {void}
+   */
+  startBubble() {
+    this.loadImage(this.IMAGES_BUBBLE[0]);
+    this.loadImages(this.IMAGES_BUBBLE);
+    this.playAnimation(this.IMAGES_BUBBLE);
+  }
+
+  /**
+   * Initiates the poison bubble animation sequence and reduces the poison level.
+   * Loads the initial poison bubble image, preloads all images for the poison
+   * bubble animation, and starts its continuous playback. Additionally, it
+   * calls the `reducePoisonLevel` method to decrease the character's poison level.
+   *
+   * @method
+   * @returns {void}
+   */
+  statPoisonBubble() {
+    this.loadImage(this.IMAGES_BUBBLE_POISON[0]);
+    this.loadImages(this.IMAGES_BUBBLE_POISON);
+    this.playAnimation(this.IMAGES_BUBBLE_POISON);
+    this.reducePoisonLevel();
   }
 
   /**

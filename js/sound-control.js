@@ -3,9 +3,7 @@
  * If the background music exists, its muted property is set based on the `isMuted` variable.
  */
 function toggleBackgroundMusic() {
-  if (world.backgroundMusic) {
-    world.backgroundMusic.muted = isMuted;
-  }
+  if (world.backgroundMusic) world.backgroundMusic.muted = isMuted;
 }
 
 /**
@@ -18,9 +16,7 @@ function toggleCharacterSounds() {
     world.character.AUDIO_FIN_SLAP.muted = isMuted;
     world.character.AUDIO_NO_POISON.muted = isMuted;
     world.character.AUDIO_SLEEP.muted = isMuted;
-    if (isMuted) {
-      stopCharacterSounds();
-    }
+    if (isMuted) stopCharacterSounds();
   }
 }
 
@@ -45,9 +41,7 @@ function stopCharacterSounds() {
 function toggleBossSounds() {
   if (world.boss && world.boss.AUDIO_ATTACK) {
     world.boss.AUDIO_ATTACK.muted = isMuted;
-    if (isMuted && typeof world.boss.stopSounds === "function") {
-      world.boss.stopSounds();
-    }
+    if (isMuted && typeof world.boss.stopSounds === "function") world.boss.stopSounds();
   }
 }
 
@@ -71,9 +65,7 @@ function toggleEnemySounds() {
     world.level.enemies.forEach((enemy) => {
       if (enemy instanceof Puffers || enemy instanceof Jellyfish) {
         enemy.AUDIO_HURT.muted = isMuted;
-        if (isMuted) {
-          stopEnemySound(enemy);
-        }
+        if (isMuted) stopEnemySound(enemy);
       }
     });
   }
@@ -105,9 +97,7 @@ function toggleCollectableSounds() {
     world.level.collectables.forEach((item) => {
       if (item instanceof Coin || item instanceof Poison) {
         item.AUDIO_COLLECT.muted = isMuted;
-        if (isMuted) {
-          stopCollectableSound(item);
-        }
+        if (isMuted) stopCollectableSound(item);
       }
     });
   }
@@ -156,9 +146,7 @@ function toggleCollectablesSounds(collectables) {
   if (collectables) {
     collectables.forEach((item) => {
       item.AUDIO_COLLECT.muted = isMuted;
-      if (isMuted) {
-        stopCollectableSound(item);
-      }
+      if (isMuted) stopCollectableSound(item);
     });
   }
 }

@@ -29,8 +29,6 @@ class Light extends MovableObjects {
    * The animation updates at a frame rate of 60 frames per second.
    */
   animate() {
-    setInterval(() => {
-      this.x -= this.speed;
-    }, 1000 / 60);
+    setInterval(() => (this.x -= this.speed), 1000 / 60);
   }
 }

@@ -42,14 +42,12 @@ class Poison extends MovableObjects {
    * The animation interval is set to 300 milliseconds.
    */
   animate() {
-    setInterval(() => {
-      this.playAnimation(this.IMAGES_GROUND);
-    }, 300);
+    setInterval(() => this.playAnimation(this.IMAGES_GROUND), 300);
   }
 
   /**
-   * Plays the collect sound effect by resetting the audio's current time to 0 
-   * and then playing the audio. This method assumes that `AUDIO_COLLECT` is 
+   * Plays the collect sound effect by resetting the audio's current time to 0
+   * and then playing the audio. This method assumes that `AUDIO_COLLECT` is
    * an audio element that has been properly initialized.
    */
   playSound() {

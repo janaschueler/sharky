@@ -44,8 +44,8 @@ class StatusBarBossLife extends DrawableObject {
     this.IMAGES_LIFE = ["img/4. Marcadores/Purple/life/0.png", "img/4. Marcadores/Purple/life/20.png", "img/4. Marcadores/Purple/life/60.png", "img/4. Marcadores/Purple/life/100.png"];
     this.loadImages(this.IMAGES_LIFE);
     this.setPercentage(100);
-    this.x = 300;
-    this.y = 10;
+    this.x = 515;
+    this.y = 50;
     this.energy = 100;
     this.width = 180;
     this.height = 50;

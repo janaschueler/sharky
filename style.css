@@ -184,6 +184,11 @@ canvas {
   margin: 8px;
 }
 
+button img {
+  pointer-events: none;
+  user-select: none;
+}
+
 .mobileJoystick button img {
   width: 22px;
   height: 22px;
@@ -357,7 +362,6 @@ header {
   justify-content: center;
   margin: 0 auto;
 }
-
 
 header h1 {
   margin: 0 auto;

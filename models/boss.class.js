@@ -273,8 +273,6 @@ class Boss extends MovableObjects {
    */
   stopSounds() {
     this.stopSound("attack", this.AUDIO_ATTACK);
-    if (this.AUDIO_ATTACK) {
-      this.AUDIO_ATTACK.muted = true; // optional zur Sicherheit
-    }
+    if (this.AUDIO_ATTACK) this.AUDIO_ATTACK.muted = true;
   }
 }

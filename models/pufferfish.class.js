@@ -79,12 +79,8 @@ class Puffers extends MovableObjects {
         return;
       }
       if (this.isInProximity()) {
-        if (!this.isTransitioning && !this.isAttacking) {
-          this.startTransition();
-        }
-      } else {
-        this.playAnimation(this.IMAGES_SWIM);
-      }
+        if (!this.isTransitioning && !this.isAttacking) this.startTransition();
+      } else this.playAnimation(this.IMAGES_SWIM);
     }, 200);
   }
 
@@ -124,13 +120,9 @@ class Puffers extends MovableObjects {
       this.y -= floatSpeed;
       this.x -= floatSpeed;
       if (!this.hasSlowedDown) {
-        setTimeout(() => {
-          this.hasSlowedDown = true;
-        }, 400);
+        setTimeout(() => (this.hasSlowedDown = true), 400);
       }
-      if (this.y + this.height < 0) {
-        this.markedForRemoval = true;
-      }
+      if (this.y + this.height < 0) this.markedForRemoval = true;
     }, 1000 / 60);
   }
 

@@ -74,7 +74,6 @@ class DrawableObject {
       ctx.drawImage(this.img, this.x, this.y, this.width, this.height);
     } catch (error) {
       console.error("Error drawing image:", error);
-      console.log("Image path:", this.img?.src);
     }
   }
 

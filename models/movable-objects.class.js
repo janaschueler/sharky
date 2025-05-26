@@ -309,9 +309,8 @@ class MovableObjects extends DrawableObject {
       this.isAttacking = true;
       this.playAnimationOnce(this.IMAGES_ATTACKING, () => {
         this.attackInterval = setInterval(() => {
-          if (this.isInProximity()) {
-            this.playAnimation(this.IMAGES_ATTACKING);
-          } else {
+          if (this.isInProximity()) this.playAnimation(this.IMAGES_ATTACKING);
+          else {
             clearInterval(this.attackInterval);
             this.isAttacking = false;
             this.isTransitioning = false;
@@ -367,7 +366,7 @@ class MovableObjects extends DrawableObject {
     if (!audio) return;
     audio.pause();
     audio.currentTime = 0;
-    audio.play().catch((e) => console.warn("🔇 Sound konnte nicht abgespielt werden:", e));
+    audio.play().catch(e);
   }
 
   /**

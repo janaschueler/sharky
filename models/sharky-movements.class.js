@@ -11,6 +11,35 @@ class SharkyMovements {
   }
 
   /**
+   * Interrupts the sharky's sleep state.
+   */
+  interruptAndSetVertical(swimUp, swimDown) {
+    this.sharky.interruptSleep();
+    this.sharky.swimUp = swimUp;
+    this.sharky.swimDown = swimDown;
+  }
+
+  /**
+   * Moves the sharky horizontally.
+   * @param {number} direction - -1 for left, 1 for right.
+   * @param {number} speedFactor - Multiplier for the sharky's speed.
+   */
+  moveHorizontal(direction, speedFactor = 1) {
+    this.sharky.interruptSleep();
+    this.sharky.x += this.sharky.speed * direction * speedFactor;
+  }
+
+  /**
+   * Moves the sharky vertically.
+   * @param {number} direction - -1 for up, 1 for down.
+   * @param {number} speedFactor - Multiplier for the sharky's vertical speed.
+   */
+  moveVertical(direction, speedFactor = 1.2) {
+    this.sharky.interruptSleep();
+    this.sharky.y += this.sharky.speed * direction * speedFactor;
+  }
+
+  /**
    * Checks if an attack key (SPACE or D) is currently pressed.
    * @param {Object} k - The keyboard input state.
    * @returns {boolean} True if an attack key is pressed.
@@ -39,52 +68,44 @@ class SharkyMovements {
    * Moves the sharky down and to the left, simulating a diagonal swim motion.
    */
   swimDownLeftMethod() {
-    this.sharky.interruptSleep();
-    this.sharky.x -= this.sharky.speed / 3;
-    this.sharky.y += this.sharky.speed / 1.2;
-    this.sharky.swimDown = true;
-    this.sharky.swimUp = false;
+    this.interruptAndSetVertical(false, true);
+    this.moveHorizontal(-1, 1 / 3);
+    this.moveVertical(1);
   }
 
   /**
    * Moves the sharky down and to the right, simulating a diagonal swim motion.
    */
   swimDownRightMethod() {
-    this.sharky.interruptSleep();
-    this.sharky.x += this.sharky.speed / 3;
-    this.sharky.y += this.sharky.speed / 1.2;
-    this.sharky.swimDown = true;
-    this.sharky.swimUp = false;
+    this.interruptAndSetVertical(false, true);
+    this.moveHorizontal(1, 1 / 3);
+    this.moveVertical(1);
   }
 
   /**
    * Moves the sharky up and to the left, simulating a diagonal swim motion.
    */
   swimUpLeftMethod() {
-    this.sharky.interruptSleep();
-    this.sharky.x -= this.sharky.speed / 3;
-    this.sharky.y -= this.sharky.speed / 1.2;
-    this.sharky.swimUp = true;
-    this.sharky.swimDown = false;
+    this.interruptAndSetVertical(true, false);
+    this.moveHorizontal(-1, 1 / 3);
+    this.moveVertical(-1);
   }
 
   /**
    * Moves the sharky up and to the right, simulating a diagonal swim motion.
    */
   swimUpRightMethod() {
-    this.sharky.interruptSleep();
-    this.sharky.x += this.sharky.speed / 3;
-    this.sharky.y -= this.sharky.speed / 1.2;
-    this.sharky.swimUp = true;
-    this.sharky.swimDown = false;
+    this.interruptAndSetVertical(true, false);
+    this.moveHorizontal(1, 1 / 3);
+    this.moveVertical(-1);
   }
 
   /**
    * Moves the sharky directly to the left and sets direction state.
    */
   swimLeftMethod() {
-    this.sharky.interruptSleep();
-    this.sharky.x -= this.sharky.speed;
+    this.interruptAndSetVertical(false, false); // Reset vertical flags for pure horizontal movement
+    this.moveHorizontal(-1);
     this.sharky.otherDirection = true;
   }
 
@@ -92,11 +113,9 @@ class SharkyMovements {
    * Moves the sharky directly to the right and resets vertical movement flags.
    */
   swimRightMethod() {
-    this.sharky.interruptSleep();
-    this.sharky.x += this.sharky.speed;
+    this.interruptAndSetVertical(false, false); // Reset vertical flags for pure horizontal movement
+    this.moveHorizontal(1);
     this.sharky.otherDirection = false;
-    this.sharky.swimUp = false;
-    this.sharky.swimDown = false;
   }
 
   /**

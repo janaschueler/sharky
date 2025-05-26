@@ -23,17 +23,13 @@ class CollisionDetector {
   checkEnemyCollisions() {
     if (this.world.character.isDead) return;
     const allEnemies = [...this.world.level.enemies];
-    if (this.world.coins >= 2) {
-      allEnemies.push(this.world.boss);
-    }
+    if (this.world.coins >= 2) allEnemies.push(this.world.boss);
     allEnemies.forEach((enemy) => {
       if (enemy.dead) return;
       if (this.world.character.isColliding(enemy)) {
         this.world.character.lastHurtBy = enemy;
         this.world.character.hit();
-        if (enemy.playSoundHurt) {
-          enemy.playSoundHurt();
-        }
+        if (enemy.playSoundHurt) enemy.playSoundHurt();
         this.world.statusBar.setPercentage(this.world.character.energy);
       }
     });
@@ -69,9 +65,7 @@ class CollisionDetector {
       collectable.playSound();
       this.world.poison++;
       this.world.statusBarPoison.storePoison(this.world.poison);
-    } else {
-      return;
-    }
+    } else return;
     this.world.level.collectables.splice(index, 1);
   }
 
@@ -89,12 +83,8 @@ class CollisionDetector {
     const bubblesToRemove = [];
     bubbles.forEach((bubble, index) => {
       allEnemies.forEach((enemy) => {
-        if (enemy instanceof Jellyfish) {
-          this.handleJellyfishCollision(enemy, bubble, index, bubblesToRemove);
-        }
-        if (enemy === boss) {
-          this.handleBossCollision(enemy, bubble, index, bubblesToRemove);
-        }
+        if (enemy instanceof Jellyfish) this.handleJellyfishCollision(enemy, bubble, index, bubblesToRemove);
+        if (enemy === boss) this.handleBossCollision(enemy, bubble, index, bubblesToRemove);
       });
     });
     this.removeBubbles(bubbles, bubblesToRemove);
@@ -123,9 +113,7 @@ class CollisionDetector {
     this.world.level.enemies.forEach((enemy) => {
       if (enemy instanceof Puffers && (this.world.character.isClose(enemy) || this.world.character.isColliding(enemy))) {
         enemy.reactToHit();
-        if (enemy.playSoundHurt) {
-          enemy.playSoundHurt();
-        }
+        if (enemy.playSoundHurt) enemy.playSoundHurt();
       }
     });
   }

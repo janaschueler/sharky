@@ -59,15 +59,10 @@ class Jellyfish extends MovableObjects {
    */
   startBehaviorLoop() {
     setInterval(() => {
-      if (this.dead) {
-        this.playAnimation(this.IMAGES_DEAD);
-      } else if (this.isInProximity()) {
-        if (!this.isTransitioning && !this.isAttacking) {
-          this.startTransition();
-        }
-      } else {
-        this.playAnimation(this.IMAGES_SWIM);
-      }
+      if (this.dead) this.playAnimation(this.IMAGES_DEAD);
+      else if (this.isInProximity()) {
+        if (!this.isTransitioning && !this.isAttacking) this.startTransition();
+      } else this.playAnimation(this.IMAGES_SWIM);
     }, 200);
   }
 
@@ -77,9 +72,8 @@ class Jellyfish extends MovableObjects {
    */
   startFloatingOnDeath() {
     setInterval(() => {
-      if (this.dead && !this.hasStartedFloating) {
-        this.hasStartedFloating = true;
-      } else if (this.hasStartedFloating) {
+      if (this.dead && !this.hasStartedFloating) this.hasStartedFloating = true;
+      else if (this.hasStartedFloating) {
         this.y -= this.speed * 2;
         if (this.y + this.height < 0) {
           this.markedForRemoval = true;

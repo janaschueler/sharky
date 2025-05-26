@@ -66,9 +66,7 @@ class EndGame {
     tryAgainBtn.src = this.world.IMAGES_TRAY_AGAIN[0];
     tryAgainBtn.classList.add("try-again-button");
     document.body.appendChild(tryAgainBtn);
-    tryAgainBtn.addEventListener("click", () => {
-      restartGame(); // This function must be globally available
-    });
+    tryAgainBtn.addEventListener("click", () => restartGame());
   }
 
   /**

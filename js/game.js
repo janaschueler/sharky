@@ -17,13 +17,10 @@ const buttonToKey = {
  */
 function init() {
   canvas = document.getElementById("canvas");
-
   const storedMute = localStorage.getItem("isMuted");
-  if (storedMute !== null) {
-    isMuted = storedMute === "true";
-  }
-  const icon = document.querySelector("#sound-btn img");
-  icon.src = isMuted ? "img/icon/volume-xmark-solid.svg" : "img/icon/volume-high-solid.svg";
+  if (storedMute !== null) isMuted = storedMute === "true";
+  else localStorage.setItem("isMuted", isMuted.toString());
+  updateSoundIcon();
   setupStartButton();
 }
 
@@ -34,7 +31,7 @@ function init() {
 function setupStartButton() {
   document.getElementById("start-btn").style.display = "block";
   document.getElementById("start-btn").addEventListener("click", startGame, { once: true });
-  document.querySelector("#sound-btn img").src = "img/icon/volume-xmark-solid.svg";
+  updateSoundIcon();
 }
 
 /**
@@ -51,8 +48,7 @@ function startGame() {
   const displaySize = canvas.getBoundingClientRect();
   world = new World(canvas, keyboard, displaySize.width, displaySize.height);
   setMuteState(isMuted);
-  const icon = document.querySelector("#sound-btn img");
-  icon.src = isMuted ? "img/icon/volume-xmark-solid.svg" : "img/icon/volume-high-solid.svg";
+  updateSoundIcon();
 }
 
 window.addEventListener("load", checkOrientation);
@@ -71,11 +67,8 @@ window.addEventListener("orientationchange", checkOrientation);
 function checkOrientation() {
   const overlay = document.getElementById("rotate-device-overlay");
   const game = document.querySelector(".game-container");
-
   const isMobileOrTablet = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || "ontouchstart" in window || navigator.maxTouchPoints > 0;
-
   const isPortrait = window.innerHeight > window.innerWidth;
-
   if (isMobileOrTablet && isPortrait) {
     overlay.style.display = "flex";
     game.style.display = "none";
@@ -99,22 +92,29 @@ function checkOrientation() {
  */
 
 document.getElementById("sound-btn").addEventListener("click", toggleIcon);
-// document.getElementById("sound-btn").addEventListener("keydown", toggleIcon);
 
 function toggleIcon(event) {
   if (event.type === "keydown" && (event.code === "Space" || event.code === "Enter")) {
     event.preventDefault();
     return;
   }
-  const icon = document.querySelector("#sound-btn img");
   const newMuteState = !isMuted;
-  icon.src = newMuteState ? "img/icon/volume-xmark-solid.svg" : "img/icon/volume-high-solid.svg";
+  isMuted = newMuteState;
+  updateSoundIcon();
   localStorage.setItem("isMuted", newMuteState ? "true" : "false");
-  if (world) {
-    setMuteState(newMuteState);
-  } else {
-    isMuted = newMuteState;
-  }
+  if (world) setMuteState(newMuteState);
+  else isMuted = newMuteState;
+}
+
+/**
+ * Updates the sound icon image based on the current mute state.
+ * If the sound is muted, sets the icon to a "muted" image; otherwise, sets it to a "volume high" image.
+ * Assumes the presence of a global `isMuted` variable and an <img> inside an element with the ID "sound-btn".
+ */
+function updateSoundIcon() {
+  const icon = document.querySelector("#sound-btn img");
+  if (!icon) return;
+  icon.src = isMuted ? "img/icon/volume-xmark-solid.svg" : "img/icon/volume-high-solid.svg";
 }
 
 /**
@@ -223,18 +223,10 @@ document.addEventListener("keyup", (event) => {
  */
 Object.entries(buttonToKey).forEach(([buttonId, key]) => {
   const button = document.getElementById(buttonId);
-  button.addEventListener("mousedown", () => {
-    keyboard.pressKey(key);
-  });
-  button.addEventListener("mouseup", () => {
-    keyboard.releaseKey(key);
-  });
-  button.addEventListener("touchstart", () => {
-    keyboard.pressKey(key);
-  });
-  button.addEventListener("touchend", () => {
-    keyboard.releaseKey(key);
-  });
+  button.addEventListener("mousedown", () => keyboard.pressKey(key));
+  button.addEventListener("mouseup", () => keyboard.releaseKey(key));
+  button.addEventListener("touchstart", () => keyboard.pressKey(key));
+  button.addEventListener("touchend", () => keyboard.releaseKey(key));
 });
 
 /**
@@ -247,31 +239,25 @@ Object.entries(buttonToKey).forEach(([buttonId, key]) => {
  * - Restores the mute state and updates the mute icon if the game was muted before restarting.
  */
 function restartGame() {
-  if (world && typeof world.stop === "function") {
-    world.stop();
-  }
+  if (world && typeof world.stop === "function") world.stop();
   stopAllSoundsTemporarily();
   world = null;
   const wasMuted = isMuted;
   restartAnimation();
   summaryRestart();
-  if (wasMuted) {
-    isMuted = true;
-    toggleIcon(new Event("click"));
-  }
+}
 
-  /**
-   * Removes the "Try Again" button, "Game Over" image, and "Win Screen" image elements
-   * from the DOM if they exist, effectively resetting the end-of-game UI state.
-   */
-  function restartAnimation() {
-    const tryAgainBtn = document.querySelector(".try-again-button");
-    if (tryAgainBtn) tryAgainBtn.remove();
-    const gameOverImg = document.querySelector(".game-over-image");
-    if (gameOverImg) gameOverImg.remove();
-    const winImg = document.querySelector(".win-screen-image");
-    if (winImg) winImg.remove();
-  }
+/**
+ * Removes the "Try Again" button, "Game Over" image, and "Win Screen" image elements
+ * from the DOM if they exist, effectively resetting the end-of-game UI state.
+ */
+function restartAnimation() {
+  const tryAgainBtn = document.querySelector(".try-again-button");
+  if (tryAgainBtn) tryAgainBtn.remove();
+  const gameOverImg = document.querySelector(".game-over-image");
+  if (gameOverImg) gameOverImg.remove();
+  const winImg = document.querySelector(".win-screen-image");
+  if (winImg) winImg.remove();
 }
 
 /**
@@ -329,14 +315,28 @@ function bindSoundButton() {
   }
 }
 
+/**
+ * Displays the "Impressum" overlay by removing the 'd_none' and 'opacity' classes
+ * from the element with the ID 'impressumOverlay'.
+ */
 function openImpressum() {
   const overlay = document.getElementById("impressumOverlay");
   overlay.classList.remove("d_none");
   overlay.classList.remove("opacity");
 }
 
+/**
+ * Closes the "Impressum" overlay by adding a fade-out effect and then hiding it.
+ * Adds the "opacity" class for a fade-out transition, then adds the "d_none" class after 300ms to hide the overlay.
+ */
 function closeImpressum() {
   const overlay = document.getElementById("impressumOverlay");
   overlay.classList.add("opacity");
   setTimeout(() => overlay.classList.add("d_none"), 300); // Optionales Fade-out
 }
+
+window.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll("button img").forEach((img) => img.addEventListener("contextmenu", (e) => e.preventDefault()));
+  const isMobile = window.matchMedia("(pointer: coarse)").matches;
+  if (isMobile) document.body.addEventListener("contextmenu", (e) => e.preventDefault());
+});

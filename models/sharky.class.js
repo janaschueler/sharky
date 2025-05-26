@@ -170,30 +170,26 @@ class Sharky extends MovableObjects {
     setInterval(() => {
       const now = Date.now();
       const shouldSleep = now - this.lastActionTime > 15000 && !this.isDead && !this.isSleeping && !this.fallingAsleepStarted;
-      if (shouldSleep) {
-        this.fallingAsleep();
-      }
-      if (this.energy <= 0 && !this.hasPlayedDeathAnimation) {
-        this.playDeathAnimation();
-        return;
-      }
+      if (shouldSleep) this.fallingAsleep();
+      if (this.energy <= 0 && !this.hasPlayedDeathAnimation) return this.deathAnimationMethod();
       if (this.isDead || this.hasWon) return;
       if (!this.isDead && this.isHurt()) return this.commenceHurtAnimation();
-      if (this.isSleeping && !this.isDead && !this.isHurt()) {
-        this.fallingAsleep();
-      } else if (this.isIdle() && !this.isDead && !this.isHurt()) this.commenceHover();
+      if (this.isSleeping && !this.isDead && !this.isHurt()) this.fallingAsleep();
+      else if (this.isIdle() && !this.isDead && !this.isHurt()) this.handleIdle();
       else this.commenceSwim();
     }, 200);
   }
 
   /**
-   * Initiates the falling asleep process if it hasn't started yet.
-   * If the process has not started, it recursively calls itself.
+   * Initiates the death animation for the sharky character.
+   * This method triggers the playback of the character's death animation
+   * and immediately returns, indicating the start of the death sequence.
    *
    * @returns {void}
    */
-  commenceHover() {
-    this.handleIdle();
+  deathAnimationMethod() {
+    this.playDeathAnimation();
+    return;
   }
 
   /**
@@ -265,12 +261,9 @@ class Sharky extends MovableObjects {
    */
   startFloatingAfterDeath() {
     this.floatInterval = setInterval(() => {
-      if (this.y < 280) {
-        this.y += 1.5;
-      } else {
-        clearInterval(this.floatInterval);
-      }
-    }, 1000 / 60); // 60 FPS
+      if (this.y < 280) this.y += 1.5;
+      else clearInterval(this.floatInterval);
+    }, 1000 / 60);
   }
 
   /**
@@ -281,10 +274,7 @@ class Sharky extends MovableObjects {
    */
   triggerGameOver(deathImages) {
     this.img = this.imageCache[deathImages[deathImages.length - 1]];
-    if (!this.world.endGame.gameOverShown) {
-      // this.world.gameOverShown = true;
-      this.world.endGame.triggerGameOverScreen();
-    }
+    if (!this.world.endGame.gameOverShown) this.world.endGame.triggerGameOverScreen();
   }
 
   /**
@@ -296,7 +286,6 @@ class Sharky extends MovableObjects {
   fallingAsleep() {
     if (this.isDead || this.hasWon || this.fallingAsleepStarted) return;
     this.fallingAsleepStarted = true;
-
     this.playAnimationOnce(this.IMAGES_FALLING_A_SLEEP, () => {
       if (this.isDead) return;
       this.isSleeping = true;
