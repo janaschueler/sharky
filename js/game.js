@@ -335,8 +335,19 @@ function closeImpressum() {
   setTimeout(() => overlay.classList.add("d_none"), 300); // Optionales Fade-out
 }
 
+/**
+ * Disables the context menu (right-click) on specific elements to prevent unwanted user interactions.
+ *
+ * - Prevents the context menu on all <img> elements inside <button> tags by setting the "oncontextmenu" attribute.
+ * - Detects if the device is a touch-enabled device; if so, disables the context menu globally on the <body> element.
+ *
+ * Purpose: To prevent actions like saving images via right-click or accidental context menu activation on touch devices.
+ */
 window.addEventListener("DOMContentLoaded", () => {
-  document.querySelectorAll("button img").forEach((img) => img.addEventListener("contextmenu", (e) => e.preventDefault()));
-  const isMobile = window.matchMedia("(pointer: coarse)").matches;
-  if (isMobile) document.body.addEventListener("contextmenu", (e) => e.preventDefault());
+  document.querySelectorAll("button img").forEach((img) => img.setAttribute("oncontextmenu", "return false;"));
+  const isTouchDevice = "ontouchstart" in window || navigator.maxTouchPoints > 0;
+  if (isTouchDevice) {
+    document.body.setAttribute("oncontextmenu", "return false;");
+    document.body.style.overflowY = "hidden";
+  }
 });

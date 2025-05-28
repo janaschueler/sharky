@@ -22,29 +22,29 @@ h1 {
 
 html,
 body {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
   margin: 0;
   padding: 0;
   height: 100%;
   width: 100%;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: "LuckiestGuy", sans-serif;
+  background-color: black;
+  position: relative;
+  overflow: auto;
 }
 
-body {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-image: url("./img/6.Botones/Start/ocean_Background.jpg");
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  font-family: "LuckiestGuy", sans-serif;
-  flex-direction: column;
-  background-color: black;
+#backgroundImage {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  object-fit: cover;
+  user-select: none;
+  pointer-events: none;
 }
 
 .game-container {
@@ -298,6 +298,7 @@ a:hover {
 .linkImpressum {
   margin-top: 32px;
   color: black!;
+  font-size: 32px;
 }
 
 #impressumOverlay {
@@ -369,6 +370,16 @@ header h1 {
   font-family: "LuckiestGuy", sans-serif;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
   color: white;
+  margin-bottom: 32px;
+}
+
+footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  text-align: center;
+  z-index: 50;
 }
 
 @media (hover: none) and (pointer: coarse) {
@@ -378,6 +389,9 @@ header h1 {
 }
 
 @media only screen and (max-height: 480px) {
+  body {
+    overflow-y: hidden;
+  }
   canvas {
     height: 100%;
   }
@@ -399,6 +413,9 @@ header h1 {
 }
 
 @media only screen and (max-width: 720px) {
+  body {
+    overflow-y: hidden;
+  }
   canvas {
     width: 100%;
   }

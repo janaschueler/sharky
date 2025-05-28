@@ -85,28 +85,41 @@ class Boss extends MovableObjects {
     let introIndex = 0;
     let reached1500 = false;
     setInterval(() => {
-      if (this.world.character?.x >= 1500 && !reached1500) {
-        reached1500 = true;
-      }
+      if (this.world.character?.x >= 1500 && !reached1500) reached1500 = true;
       if (this.world.coins >= 2 && reached1500) {
-        if (this.energy <= 0) {
-          this.handleDeath();
-        } else if (this.shouldReactToHit()) {
-          this.handleHurt();
-        } else if (this.shouldAttackWithoutCollision()) {
-          this.handleAttackMovement();
-        } else if (this.shouldAttackOnCollision()) {
-          this.handleAttackContact();
-        } else if (this.shouldPlayIntro(introIndex)) {
-          this.playAnimation(this.IMAGES_INTRO);
-          introIndex++;
-          this.stopSound("attack", this.AUDIO_ATTACK);
-        } else {
-          this.playAnimation(this.IMAGES_HOVER);
-          this.stopSound("attack", this.AUDIO_ATTACK);
-        }
+        if (this.energy <= 0) this.handleDeath();
+        else if (this.shouldReactToHit()) this.handleHurt();
+        else if (this.shouldAttackWithoutCollision()) this.handleAttackMovement();
+        else if (this.shouldAttackOnCollision()) this.handleAttackContact();
+        else if (this.shouldPlayIntro(introIndex)) introIndex = this.meetBoss(introIndex);
+        else this.bossHover();
       }
     }, 200);
+  }
+
+  /**
+   * Triggers the boss hover animation and stops the attack sound.
+   * Plays the hover animation using the boss's hover image set,
+   * and ensures the attack audio is stopped.
+   */
+  bossHover() {
+    this.playAnimation(this.IMAGES_HOVER);
+    this.stopSound("attack", this.AUDIO_ATTACK);
+  }
+
+  /**
+   * Handles the encounter with the boss character.
+   * Plays the boss introduction animation, increments the intro index,
+   * and stops the attack sound effect.
+   *
+   * @param {number} introIndex - The current index of the boss introduction sequence.
+   * @returns {number} The incremented intro index after meeting the boss.
+   */
+  meetBoss(introIndex) {
+    this.playAnimation(this.IMAGES_INTRO);
+    introIndex++;
+    this.stopSound("attack", this.AUDIO_ATTACK);
+    return introIndex;
   }
 
   /**

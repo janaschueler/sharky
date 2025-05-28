@@ -19,7 +19,7 @@ class World {
   statusBar = new StatusBarLife();
   statusBarCoins = new StatusBarCoins();
   statusBarPoison = new StatusBarPoison();
-  backgroundMusic = new Audio("audio/wave_sounds.mp3");
+  backgroundMusic = new Audio("audio/wave_sounds.ogg");
   throwableObjects = [];
   IMAGES_GAME_OVER = ["img/6.Botones/Tittles/Game Over/Recurso 9.png", "img/6.Botones/Tittles/Game Over/Recurso 10.png", "img/6.Botones/Tittles/Game Over/Recurso 11.png", "img/6.Botones/Tittles/Game Over/Recurso 12.png", "img/6.Botones/Tittles/Game Over/Recurso 13.png"];
   IMAGES_TRAY_AGAIN = ["img/6.Botones/Try again/Recurso 15.png", "img/6.Botones/Try again/Recurso 16.png", "img/6.Botones/Try again/Recurso 17.png", "img/6.Botones/Try again/Recurso 18.png"];

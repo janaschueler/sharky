@@ -8,8 +8,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Sharky | 2D Game</title>
   </head>
-  <!-- <body onload="init()" oncontextmenu="return false;"> -->
-  <body onload="init()">
+
+  <body onload="init()" oncontextmenu="event.preventDefault()">
+    <img id="backgroundImage" src="./img/6.Botones/Start/ocean_Background.jpg" alt="Background" draggable="false" oncontextmenu="return false;" />
     <header>
       <h1>Sharky</h1>
     </header>
@@ -94,7 +95,7 @@
         </p>
       </div>
     </div>
-    <footer class="footer">
+    <footer>
       <p class="linkImpressum">
         <a onclick="openImpressum()">Impressum</a>
       </p>
